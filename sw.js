@@ -1,10 +1,12 @@
 /* ANNOINTED QUEENS service worker */
-const CACHE = 'aq-v1';
+const CACHE = 'aq-v2';
 
 const STABLE_ASSETS = [
   './',
   './index.html',
   './style.css',
+  './polyfill.js',
+  './shares.js',
   './config.js',
   './auth.js',
   './db.js',

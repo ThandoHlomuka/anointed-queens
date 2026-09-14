@@ -76,7 +76,7 @@ window.CHECKOUT = (function () {
 
     var html =
       '<div class="wrap section" style="padding-top:28px"><h1>Secure Checkout</h1>' +
-      '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(320px,100%),420px));gap:24px;align-items:start">' +
+      '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,420px));grid-template-columns:repeat(auto-fit,minmax(min(320px,100%),420px));gap:24px;align-items:start">' +
       '<div>' +
         '<div class="panel"><h3><i class="fas fa-truck-fast gold"></i> Delivery</h3>' +
         '<div class="form-grid">' +

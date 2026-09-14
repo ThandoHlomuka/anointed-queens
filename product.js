@@ -25,7 +25,7 @@ window.PRODUCT = (function () {
       '<div class="wrap section" style="padding-top:28px">' +
         '<div class="row" style="margin-bottom:18px"><a href="shop.html" class="btn btn-ghost btn-sm"><i class="fas fa-arrow-left"></i> Back to shop</a>' +
         '<span class="muted"> &bull; ' + window.esc(p.category) + '</span></div>' +
-        '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(320px,100%),400px));gap:26px;align-items:start">' +
+        '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,400px));grid-template-columns:repeat(auto-fit,minmax(min(320px,100%),400px));gap:26px;align-items:start">' +
           '<div>' + img + '</div>' +
           '<div>' +
             '<span class="eyebrow">' + window.esc(p.category || 'Anointed Queens') + '</span>' +

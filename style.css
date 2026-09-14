@@ -399,4 +399,96 @@ body.light .modal { background: white; color: #221F18; }
   .admin-side .brand { display: none; }
   .admin-nav-item { white-space: nowrap; }
   .hero-cta .btn { flex: 1; }
+  .share-sheet { inset: auto 10px 10px 10px; border-radius: 18px; max-height: 78vh; overflow-y: auto; }
+}
+
+/* ============================================================
+   SECTION L - SHARE widget (share everywhere)
+   ============================================================ */
+.share-fab {
+  position: fixed; right: 18px; bottom: 72px; z-index: 150;
+  width: 52px; height: 52px; border-radius: 50%;
+  display: grid; place-items: center; cursor: pointer;
+  border: 1px solid var(--gold); background: linear-gradient(135deg, var(--gold-bright), var(--gold-deep));
+  color: #0A0A0A; font-size: 1.15rem; box-shadow: 0 8px 24px rgba(0,0,0,.45), 0 0 0 4px rgba(33,34,38,.35);
+  transition: transform .18s ease;
+}
+.share-fab:hover { transform: scale(1.08); }
+
+.share-sheet {
+  position: fixed; right: 18px; bottom: 138px; z-index: 190;
+  width: 300px; max-width: calc(100vw - 20px);
+  background: var(--black-2); border: 1px solid var(--gold-25); border-radius: 18px;
+  padding: 14px 14px 12px; box-shadow: 0 24px 60px rgba(0,0,0,.65);
+  opacity: 0; transform: translateY(8px); pointer-events: none; transition: opacity .2s ease, transform .2s ease;
+}
+.share-sheet.open { opacity: 1; transform: none; pointer-events: auto; }
+.share-sheet-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+.share-sheet-close { border: 0; background: transparent; color: var(--text-muted); font-size: 1rem; cursor: pointer; padding: 4px; }
+.share-sheet-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.share-sheet-btn {
+  display: flex; align-items: center; gap: 9px; padding: 9px 10px;
+  border-radius: 12px; border: 1px solid var(--gold-15); background: rgba(33,34,38,.6);
+  color: var(--ivory); text-decoration: none; font-size: .85rem;
+}
+.share-sheet-btn i { width: 18px; text-align: center; color: var(--sc, var(--gold)); }
+.share-sheet-btn:hover { border-color: var(--gold); background: var(--black-3); }
+.share-sheet-copy { margin-top: 10px; }
+.share-copy {
+  width: 100%; padding: 9px; border-radius: 12px; cursor: pointer;
+  border: 1px solid var(--gold-25); background: transparent; color: var(--gold-bright); font-weight: 700;
+}
+.share-copy:hover { background: var(--gold-15); }
+.share-sheet-qr { margin-top: 12px; padding-top: 10px; border-top: 1px dashed var(--gold-25); }
+#shareQr { display: grid; place-items: center; }
+#shareQr canvas, #shareQr img { border-radius: 8px; }
+
+/* ============================================================
+   SECTION M - BROWSER COMPATIBILITY fallbacks
+   Modern grid min()/aspect-ratio/clamp() degrade gracefully on
+   older Safari / WebView; the fallback stands in @supports-less
+   or unsupporting engines.
+   ============================================================ */
+.grid-products { grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); }
+.grid-bes { grid-template-columns: repeat(auto-fill, minmax(285px, 1fr)); }
+.grid-mini { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); }
+.form-grid { grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); }
+.footer-grid { grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); }
+.kpi-grid { grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); }
+
+@supports (grid-template-columns: repeat(auto-fill, minmax(min(250px, 100%), 1fr))) {
+  .grid-products { grid-template-columns: repeat(auto-fill, minmax(min(250px, 100%), 1fr)); }
+  .grid-bes { grid-template-columns: repeat(auto-fill, minmax(min(285px, 100%), 1fr)); }
+  .grid-mini { grid-template-columns: repeat(auto-fill, minmax(min(150px, 100%), 1fr)); }
+  .form-grid { grid-template-columns: repeat(auto-fill, minmax(min(240px, 100%), 1fr)); }
+  .footer-grid { grid-template-columns: repeat(auto-fill, minmax(min(230px, 100%), 1fr)); }
+  .kpi-grid { grid-template-columns: repeat(auto-fill, minmax(min(200px, 100%), 1fr)); }
+}
+
+.product-card .thumb { height: 260px; }
+.bag-stage { height: 300px; }
+@supports (aspect-ratio: 4 / 5) {
+  .product-card .thumb { height: auto; }
+  .bag-stage { height: auto; }
+}
+
+h1 { font-size: 2.6rem; }
+h2 { font-size: 1.9rem; }
+.hero h1 { font-size: 3rem; }
+.section { padding: 56px 16px; }
+.hero { padding: 64px 16px; }
+.footer { padding: 40px 16px 24px; }
+.admin-main { padding: 28px 16px; }
+#toastWrap { max-width: 360px; }
+@supports (font-size: clamp(1rem, 2vw, 3rem)) {
+  h1 { font-size: clamp(2rem, 5vw, 3.4rem); }
+  h2 { font-size: clamp(1.6rem, 3.4vw, 2.4rem); }
+  .hero h1 { font-size: clamp(2.2rem, 6vw, 4.2rem); }
+}
+@supports (padding: clamp(16px, 4vw, 56px)) {
+  .section { padding: 56px clamp(16px, 4vw, 56px); }
+  .hero { padding: clamp(44px, 8vw, 96px) clamp(16px, 4vw, 56px); }
+  .footer { padding: 48px clamp(16px, 4vw, 56px) 24px; }
+  .admin-main { padding: 28px clamp(16px, 3vw, 40px); }
+  #toastWrap { max-width: min(360px, 88vw); }
 }

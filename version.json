@@ -1,5 +1,5 @@
 {
-  "version": "1.0.1",
+  "version": "1.1.0",
   "title": "Anointed Queens - Custom Bag House launch",
   "notes": [
     "Launch: full storefront with design-your-own bag configurator",
@@ -9,6 +9,6 @@
     "Admin portal: products, orders and escrow ops, custom-request queue, reviews moderation, customers, wallet, configurator options, journal and gallery",
     "PWA installable, SEO-ready pages, gold and black luxury design system",
     "Demo mode runs fully in the browser; Supabase wiring is a one-file switch (see supabase/SETUP.md)",
-    "1.0.1: absolute sitemap URLs + Sitemap directive in robots.txt"
+    "1.1.0: viewable & shareable everywhere - cross-browser/device hardening (compat shim + CSS @supports fallbacks), share widget on every page (WhatsApp / X / Facebook / LinkedIn / Telegram / Email / native share / QR), per-page social previews and canonical URLs; validated on Chrome and Edge across desktop/tablet/mobile/narrow"
   ]
 }

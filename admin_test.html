@@ -1,6 +1,7 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
+  <script src="polyfill.js?v=2"></script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Admin Portal (Test) - Anointed Queens</title>
@@ -11,7 +12,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700;900&family=Inter:wght@300;400;500;600;700&family=Dancing+Script:wght@600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-<link rel="stylesheet" href="style.css?v=1">
+<link rel="stylesheet" href="style.css?v=2">
 </head>
 <body class="admin-body">
 <div class="admin-layout">
@@ -28,11 +29,11 @@
   </main>
 </div>
 <div id="toastWrap"></div>
-<script src="config.js?v=1"></script>
+<script src="config.js?v=2"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
-<script src="auth.js?v=1"></script>
-<script src="db.js?v=1"></script>
-<script src="script.js?v=1"></script>
+<script src="auth.js?v=2"></script>
+<script src="db.js?v=2"></script>
+<script src="script.js?v=2"></script>
 <script>
 /* Test variant: auto-login as demo admin so the harness can exercise the portal. */
 if (window.AQ.DEMO) {
@@ -46,7 +47,7 @@ if (window.AQ.DEMO) {
   } catch (e) {}
 }
 </script>
-<script src="admin.js?v=1"></script>
+<script src="admin.js?v=2"></script>
 <script>if (window.AQDB && window.AQDB.init) window.AQDB.init();</script>
 </body>
 </html>

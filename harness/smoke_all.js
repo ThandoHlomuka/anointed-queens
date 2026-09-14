@@ -5,7 +5,7 @@ const http = require('http');
 
 const BASE = 'http://127.0.0.1:8899';
 const CHROME = 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe';
-const VIEWPORTS = [['desktop', 1280], ['mobile', 375], ['narrow', 320]];
+const VIEWPORTS = [['desktop', 1280], ['tablet', 768], ['mobile', 375], ['narrow', 320]];
 
 const PAGES = [
   'index.html', 'shop.html', 'product.html?id=p1', 'configurator.html',
