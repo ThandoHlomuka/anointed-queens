@@ -3,3 +3,4 @@ Allow: /
 Disallow: /admin.html
 Disallow: /admin_test.html
 Disallow: /*?cb=*
+Sitemap: https://anointed-queens.vercel.app/sitemap.xml
