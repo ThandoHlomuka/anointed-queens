@@ -36,8 +36,9 @@ const BOOT = function () {
 const BOOT_STR = '(' + BOOT.toString() + ')();';
 
 function up() {
+  const mod = BASE.indexOf('https') === 0 ? require('https') : http;
   return new Promise((resolve, reject) => {
-    try { http.get(BASE + '/index.html', (r) => { resolve(); r.resume(); }); } catch (e) { reject(e); }
+    try { mod.get(BASE + '/index.html', (r) => { resolve(); r.resume(); }); } catch (e) { reject(e); }
   }).catch(() => new Promise((resolve) => setTimeout(resolve, 800)).then(up));
 }
 
