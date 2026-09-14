@@ -1,0 +1,13 @@
+{
+  "version": "1.0.0",
+  "title": "Anointed Queens - Custom Bag House launch",
+  "notes": [
+    "Launch: full storefront with design-your-own bag configurator",
+    "Shop: catalog with search, filters, sort, product detail with options and verified-buyer reviews",
+    "Escrow: every custom bag starts with a 50% deposit; balance invoiced and held on fulfilment until the client confirms",
+    "Loyalty, referrals and wishlists on every account",
+    "Admin portal: products, orders and escrow ops, custom-request queue, reviews moderation, customers, wallet, configurator options, journal and gallery",
+    "PWA installable, SEO-ready pages, gold and black luxury design system",
+    "Demo mode runs fully in the browser; Supabase wiring is a one-file switch (see supabase/SETUP.md)"
+  ]
+}

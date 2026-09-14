@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Journal - Anointed Queens</title>
+<meta name="description" content="The Anointed Queens journal - leather care, gold hardware, craftsmanship and the stories behind the stitches.">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="assets/icons/icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700;900&family=Inter:wght@300;400;500;600;700&family=Dancing+Script:wght@600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<link rel="stylesheet" href="style.css?v=1">
+</head>
+<body>
+<div id="navSite"></div>
+<section class="section">
+  <div class="wrap">
+    <span class="eyebrow">Journal</span>
+    <h1>The craft, the queen, the ritual</h1>
+    <div class="grid-bes" id="journalGrid" style="margin-top:22px"></div>
+  </div>
+</section>
+<div id="footerSite"></div>
+<div id="toastWrap"></div>
+<script src="config.js?v=1"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script src="auth.js?v=1"></script>
+<script src="db.js?v=1"></script>
+<script src="cart.js?v=1"></script>
+<script src="script.js?v=1"></script>
+<script>window.BODY_ACTIVE = 'Journal'; if (window.AQDB && window.AQDB.init) window.AQDB.init();
+AQDB.getJournal().then(function (posts) {
+  document.getElementById('journalGrid').innerHTML = posts.map(function (p) {
+    return '<article class="card card-hover" style="padding:22px"><div class="eyebrow">' + new Date(p.published).toLocaleDateString() + '</div>' +
+      '<h3>' + window.esc(p.title) + '</h3><p class="muted" style="font-size:.92rem">' + window.esc(p.excerpt) + '</p>' +
+      '<button class="btn btn-outline btn-sm" data-j="' + p.id + '">Read <i class="fas fa-arrow-right"></i></button></article>';
+  }).join('');
+  document.querySelectorAll('[data-j]').forEach(function (b) {
+    b.addEventListener('click', function () {
+      var p = posts.find(function (x) { return x.id === b.getAttribute('data-j'); });
+      window.openModal('<span class="eyebrow">' + new Date(p.published).toLocaleDateString() + '</span><h3>' + window.esc(p.title) + '</h3>' +
+        '<p style="font-family:var(--font-display);font-size:1.02rem">' + window.esc(p.excerpt) + '</p>' +
+        '<p class="muted">' + window.esc(p.body) + '</p>' +
+        '<div class="row" style="margin-top:14px"><span class="badge gold"><i class="fas fa-crown"></i> ' + window.esc(p.author) + '</span></div>');
+    });
+  });
+});
+</script>
+<script src="pwa.js?v=1"></script>
+</body>
+</html>

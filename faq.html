@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FAQ - Anointed Queens</title>
+<meta name="description" content="Frequently asked questions about custom bags, escrow payments, shipping and the Anointed Club.">
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[]}</script>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="assets/icons/icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700;900&family=Inter:wght@300;400;500;600;700&family=Dancing+Script:wght@600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<link rel="stylesheet" href="style.css?v=1">
+</head>
+<body>
+<div id="navSite"></div>
+<section class="section">
+  <div class="wrap" style="max-width:860px">
+    <span class="eyebrow">FAQ</span>
+    <h1>Questions, answered</h1>
+    <div id="faqList"></div>
+  </div>
+</section>
+<div id="footerSite"></div>
+<div id="toastWrap"></div>
+<script src="config.js?v=1"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script src="auth.js?v=1"></script>
+<script src="db.js?v=1"></script>
+<script src="cart.js?v=1"></script>
+<script src="script.js?v=1"></script>
+<script>window.BODY_ACTIVE = 'FAQ'; if (window.AQDB && window.AQDB.init) window.AQDB.init();
+AQDB.getFaqs().then(function (faqs) {
+  document.getElementById('faqList').innerHTML = '<div class="grid-mini" style="gap:16px">' + faqs.map(function (f, i) {
+    return '<details class="card" style="padding:18px" ' + (i === 0 ? 'open' : '') + '><summary style="cursor:pointer;font-weight:700;color:var(--ivory)">' + window.esc(f.q) + '</summary>' +
+      '<p class="muted" style="margin:12px 0 0;font-size:.92rem">' + window.esc(f.a) + '</p></details>';
+  }).join('') + '</div>';
+});
+</script>
+<script src="pwa.js?v=1"></script>
+</body>
+</html>

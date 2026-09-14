@@ -1,0 +1,9 @@
+{
+  "name": "anointed-queens-harness",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Local harness for Anointed Queens (build, serve, smoke).",
+  "dependencies": {
+    "puppeteer-core": "^23.0.0"
+  }
+}

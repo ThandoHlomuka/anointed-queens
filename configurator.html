@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Design Your Own - Anointed Queens | Bespoke Custom Bag Builder</title>
+<meta name="description" content="Design your own custom bag: choose style, leather, colour, gold hardware, lining and personalisation. Live price, escrow protected, handcrafted to order.">
+<meta property="og:title" content="Design Your Own | Anointed Queens">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="assets/icons/icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700;900&family=Inter:wght@300;400;500;600;700&family=Dancing+Script:wght@600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<link rel="stylesheet" href="style.css?v=1">
+</head>
+<body>
+<div id="navSite"></div>
+<section class="section">
+  <div class="wrap">
+    <h1>Design your own <span class="gold-bright">bespoke bag</span></h1>
+    <p class="muted" style="max-width:640px">Eight small choices, one unforgettable bag. Your design is reviewed by our atelier, then handcrafted to order - deposit takes, escrow protects, approval releases.</p>
+    <div class="stepper" id="stepper"></div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(320px,100%),420px));gap:24px;align-items:start">
+      <div id="stepBody" style="min-height:260px"></div>
+      <div>
+        <div class="bag-stage" id="bagStage" style="min-height:220px"><div class="bag-illus"><div class="bag-strap"></div><div class="bag-flap"></div><div class="bag-lock"></div><div class="bag-body"></div></div></div>
+        <div id="bagInfo" class="muted" style="text-align:center;margin-top:12px;font-size:.9rem">Current estimate: loading...</div>
+      </div>
+    </div>
+    <div class="row" style="margin-top:22px">
+      <button class="btn btn-ghost" id="backBtn" type="button"><i class="fas fa-arrow-left"></i> Back</button>
+      <button class="btn btn-primary" id="nextBtn" type="button">Continue</button>
+      <button class="btn btn-danger" id="cancelFin" style="display:none" type="button">Cancel preview</button>
+    </div>
+    <div id="previewBody" style="margin-top:22px"></div>
+  </div>
+</section>
+<div id="footerSite"></div>
+<div id="toastWrap"></div>
+<script src="config.js?v=1"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script src="auth.js?v=1"></script>
+<script src="db.js?v=1"></script>
+<script src="cart.js?v=1"></script>
+<script src="script.js?v=1"></script>
+<script src="configurator.js?v=1"></script>
+<script>window.BODY_ACTIVE = 'Design Your Own'; if (window.AQDB && window.AQDB.init) window.AQDB.init();</script>
+<script src="pwa.js?v=1"></script>
+</body>
+</html>

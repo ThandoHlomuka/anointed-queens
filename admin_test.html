@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin Portal (Test) - Anointed Queens</title>
+<meta name="robots" content="noindex,nofollow">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="assets/icons/icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700;900&family=Inter:wght@300;400;500;600;700&family=Dancing+Script:wght@600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<link rel="stylesheet" href="style.css?v=1">
+</head>
+<body class="admin-body">
+<div class="admin-layout">
+  <aside class="admin-side">
+    <a href="index.html" class="brand"><span class="mark"><i class="fas fa-crown"></i></span><span>Anointed Queens</span></a>
+    <div id="sideNav"></div>
+  </aside>
+  <main class="admin-main">
+    <div class="row" style="justify-content:space-between;margin-bottom:16px;flex-wrap:wrap">
+      <h1 id="mainTitle" style="margin:0">Dashboard</h1>
+      <span class="badge gold"><i class="fas fa-crown"></i> Admin (test)</span>
+    </div>
+    <div id="mainBody"></div>
+  </main>
+</div>
+<div id="toastWrap"></div>
+<script src="config.js?v=1"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script src="auth.js?v=1"></script>
+<script src="db.js?v=1"></script>
+<script src="script.js?v=1"></script>
+<script>
+/* Test variant: auto-login as demo admin so the harness can exercise the portal. */
+if (window.AQ.DEMO) {
+  try {
+    var users = JSON.parse(localStorage.getItem('aq_demo_users')) || [];
+    if (!users.some(function (u) { return u.role === 'admin'; })) {
+      users.push({ id: 'aq_admin', email: 'admin@anointedqueens.test', name: 'Admin Queen', password: 'admin123', role: 'admin', loyalty_points: 0, referral_code: 'AQADMIN', created_at: new Date().toISOString() });
+      localStorage.setItem('aq_demo_users', JSON.stringify(users));
+    }
+    localStorage.setItem('aq_session', JSON.stringify({ id: 'aq_admin', email: 'admin@anointedqueens.test', name: 'Admin Queen', role: 'admin', demo: true }));
+  } catch (e) {}
+}
+</script>
+<script src="admin.js?v=1"></script>
+<script>if (window.AQDB && window.AQDB.init) window.AQDB.init();</script>
+</body>
+</html>

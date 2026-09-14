@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sign in - Anointed Queens</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="assets/icons/icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700;900&family=Inter:wght@300;400;500;600;700&family=Dancing+Script:wght@600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<link rel="stylesheet" href="style.css?v=1">
+</head>
+<body>
+<div class="auth-shell">
+  <div class="auth-card">
+    <a href="index.html" class="brand"><span class="mark"><i class="fas fa-crown"></i></span><span>Anointed Queens</span></a>
+    <h1>Welcome back</h1>
+    <div class="field"><label>Email</label><input class="input" id="aEmail" type="email" autocomplete="email"></div>
+    <div class="field"><label>Password</label><input class="input" id="aPass" type="password" autocomplete="current-password"></div>
+    <div id="authErr" style="display:none;color:var(--danger);font-size:.85rem;margin-bottom:10px"></div>
+    <button class="btn btn-primary btn-block" id="loginBtn"><i class="fas fa-crown"></i> Sign in</button>
+    <p style="text-align:center;margin-top:14px;font-size:.9rem" class="muted">New here? <a href="register.html" class="gold">Join the club</a></p>
+    <p style="text-align:center;font-size:.78rem;color:var(--text-muted)" id="demoHint"></p>
+  </div>
+</div>
+<div id="toastWrap"></div>
+<script src="config.js?v=1"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script src="auth.js?v=1"></script>
+<script src="script.js?v=1"></script>
+<script>
+if (window.AQ.DEMO) {
+  document.getElementById('demoHint').innerHTML = 'Demo mode: any email + password creates/logs into an account. Sign up first to register.';
+} else {
+  document.getElementById('demoHint').innerHTML = 'Secure Supabase sign in.';
+}
+document.getElementById('loginBtn').addEventListener('click', async function () {
+  var btn = this;
+  var email = document.getElementById('aEmail').value.trim();
+  var pass = document.getElementById('aPass').value;
+  if (!email || !pass) { document.getElementById('authErr').textContent = 'Enter your email and password.'; document.getElementById('authErr').style.display = 'block'; return; }
+  btn.classList.add('loading'); btn.disabled = true;
+  var r = await window.AQAuth.signIn(email, pass);
+  btn.classList.remove('loading'); btn.disabled = false;
+  if (r.error) { document.getElementById('authErr').textContent = r.error; document.getElementById('authErr').style.display = 'block'; return; }
+  var u = window.AQAuth.currentUser();
+  window.toast('Welcome, ' + u.name.split(' ')[0] + '!', 'green');
+  location.href = u.role === 'admin' ? 'admin.html' : (new URLSearchParams(location.search).get('next') || 'account.html');
+});
+</script>
+<script src="pwa.js?v=1"></script>
+</body>
+</html>
