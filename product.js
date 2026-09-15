@@ -33,7 +33,7 @@ window.PRODUCT = (function () {
             '<p style="color:var(--text-muted);font-size:1.05rem">' + window.esc(p.tagline || '') + '</p>' +
             '<div class="stars" style="margin-bottom:10px">' + starsHTML(avg) + ' <span class="muted" style="font-size:.82rem">' + reviews.length + ' reviews</span></div>' +
             '<div class="price-row" style="font-size:1.4rem"><span class="price">' + window.fmtMoney(p.base_price) + '</span></div>' +
-            '<p style="font-size:.86rem;color:var(--text-muted)"><i class="fas fa-shield-halved gold"></i> Escrow protected &bull; Ships from our atelier &bull; ' + (p.in_stock === false ? 'Sold out' : 'In stock (' + (p.stock || 0) + ')') + '</p>' +
+            '<p style="font-size:.86rem;color:var(--text-muted)"><i class="fas fa-shield-halved gold"></i> Escrow protected &bull; Ships from our atelier &bull; ' + (p.in_stock === false ? 'Sold out' : (p.stock > 0 && p.stock <= 5 ? '<span style="color:var(--gold)"><i class="fas fa-fire"></i> Only ' + p.stock + ' left - order soon</span>' : 'In stock (' + (p.stock || 0) + ')')) + '</p>' +
             '<div class="row" style="margin-top:16px">' +
               '<button class="btn btn-primary" id="addBagBtn"' + (p.in_stock === false ? ' disabled' : '') + '><i class="fas fa-bag-shopping"></i> Add to Bag</button>' +
               '<button class="icon-btn" id="wishToggle" style="width:48px;height:48px" aria-label="Wishlist"><i class="fas fa-heart"></i></button>' +
@@ -65,7 +65,11 @@ window.PRODUCT = (function () {
         '</div>' +
       '</div>';
 
-    document.getElementById('addBagBtn').addEventListener('click', function () {
+    document.getElementById('addBagBtn').addEventListener('click', async function () {
+      var items = await AQCart.hydrate();
+      var inCart = items.filter(function (it) { return it.product_id === p.id; }).reduce(function (s, it) { return s + it.qty; }, 0);
+      var stock = Number(p.stock) || 0;
+      if (inCart + 1 > stock) { window.toast('Only ' + stock + ' available' + (inCart ? ' and you already have ' + inCart + ' in your bag' : ''), 'err'); return; }
       AQCart.addShop(p.id, 1);
       window.toast(p.name + ' added to your bag.', 'green');
     });

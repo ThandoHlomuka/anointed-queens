@@ -1,5 +1,5 @@
 /* ANNOINTED QUEENS service worker */
-const CACHE = 'aq-v2';
+const CACHE = 'aq-v3';
 
 const STABLE_ASSETS = [
   './',

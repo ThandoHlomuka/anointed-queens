@@ -1,6 +1,6 @@
 {
-  "version": "1.1.0",
-  "title": "Anointed Queens - Custom Bag House launch",
+  "version": "1.2.0",
+  "title": "Anointed Queens - live inventory for the ready-to-ship collection",
   "notes": [
     "Launch: full storefront with design-your-own bag configurator",
     "Shop: catalog with search, filters, sort, product detail with options and verified-buyer reviews",
@@ -9,6 +9,7 @@
     "Admin portal: products, orders and escrow ops, custom-request queue, reviews moderation, customers, wallet, configurator options, journal and gallery",
     "PWA installable, SEO-ready pages, gold and black luxury design system",
     "Demo mode runs fully in the browser; Supabase wiring is a one-file switch (see supabase/SETUP.md)",
-    "1.1.0: viewable & shareable everywhere - cross-browser/device hardening (compat shim + CSS @supports fallbacks), share widget on every page (WhatsApp / X / Facebook / LinkedIn / Telegram / Email / native share / QR), per-page social previews and canonical URLs; validated on Chrome and Edge across desktop/tablet/mobile/narrow"
+    "1.1.0: viewable & shareable everywhere - cross-browser/device hardening (compat shim + CSS @supports fallbacks), share widget on every page (WhatsApp / X / Facebook / LinkedIn / Telegram / Email / native share / QR), per-page social previews and canonical URLs; validated on Chrome and Edge across desktop/tablet/mobile/narrow",
+    "1.2.0: selling the in-house collection with real inventory - stock is decremented on every purchase and restored on refunds (Supabase sell_stock / restock_order RPCs, demo localStorage counter), low-stock 'Only X left' and sold-out states across shop, product detail, bag and checkout; add-to-bag and checkout refuse overselling; admin products screen gains quick +5/+10/+20 restock and low-stock warnings; e-commerce probe automates buy/refund/restock flows"
   ]
 }

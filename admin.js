@@ -259,7 +259,10 @@ window.ADMIN = (function () {
       products.map(function (p) {
         return '<tr><td><b>' + window.esc(p.name) + '</b><div class="muted" style="font-size:.78rem">' + window.esc(p.tagline || '') + '</div></td>' +
           '<td>' + window.esc(p.category) + '</td><td><b class="gold-bright">' + window.fmtMoney(p.base_price) + '</b></td>' +
-          '<td>' + (p.stock || 0) + '</td>' +
+          '<td>' + (p.stock === 0 ? '<span style="color:#c0392b"><i class="fas fa-circle-xmark"></i> 0</span>' : (p.stock <= 5 ? '<span style="color:var(--gold)"><i class="fas fa-fire"></i> ' : '') + (p.stock || 0) + (p.stock <= 5 ? '</span>' : '')) +
+          '<div class="row" style="gap:4px;margin-top:4px"><button class="btn btn-ghost btn-sm" data-rs="' + p.id + '" data-rsq="5" style="padding:2px 8px">+5</button>' +
+          '<button class="btn btn-ghost btn-sm" data-rs="' + p.id + '" data-rsq="10" style="padding:2px 8px">+10</button>' +
+          '<button class="btn btn-ghost btn-sm" data-rs="' + p.id + '" data-rsq="20" style="padding:2px 8px">+20</button></div></td>' +
           '<td>' + (p.featured ? '<span class="badge gold">Featured</span> ' : '') + (p.active === false ? '<span class="badge grey">Hidden</span>' : '<span class="badge green">Live</span>') + '</td>' +
           '<td><div class="row" style="gap:6px"><button class="btn btn-ghost btn-sm" data-ep="' + p.id + '"><i class="fas fa-pen"></i></button>' +
           '<button class="btn btn-danger btn-sm" data-dp="' + p.id + '"><i class="fas fa-trash"></i></button></div></td></tr>';
@@ -268,6 +271,15 @@ window.ADMIN = (function () {
     document.getElementById('newProd').addEventListener('click', function () { productForm(null, products); });
     el.querySelectorAll('[data-ep]').forEach(function (b) { b.addEventListener('click', function () { productForm(products.find(function (p) { return String(p.id) === String(b.getAttribute('data-ep')); }), products); }); });
     el.querySelectorAll('[data-dp]').forEach(function (b) { b.addEventListener('click', async function () { if (confirm('Delete this product?')) { await DB.removeProduct(b.getAttribute('data-dp')); adminRenders.products(); } }); });
+    el.querySelectorAll('[data-rs]').forEach(function (b) { b.addEventListener('click', async function () {
+      var id = b.getAttribute('data-rs');
+      var qty = +b.getAttribute('data-rsq') || 10;
+      var p = products.find(function (x) { return String(x.id) === String(id); });
+      if (!p) return;
+      await DB.saveProduct(Object.assign({}, p, { stock: (Number(p.stock) || 0) + qty }));
+      window.toast(('Restocked +' + qty + ' ' + p.name), 'green');
+      adminRenders.products();
+    }); });
   }
 
   function productForm(p, products) {
@@ -292,7 +304,7 @@ window.ADMIN = (function () {
             category: document.getElementById('pCat').value.trim(),
             tagline: document.getElementById('pTag').value.trim(),
             base_price: +document.getElementById('pPrice').value || 0,
-            stock: +document.getElementById('pStock').value || 0,
+            stock: Math.max(0, +document.getElementById('pStock').value || 0),
             featured: document.getElementById('pFeat').checked,
             active: document.getElementById('pAct').checked,
             description: document.getElementById('pDesc').value.trim(),

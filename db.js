@@ -111,6 +111,28 @@ window.AQDB = (function () {
 
   function seed() { if (AQ.DEMO) { seedProducts(); seedDesignOptions(); seedExtras(); } }
 
+  /* ---------- stock helpers (local demo) ---------- */
+  function sellStockLocal(items) {
+    var list = ls('products');
+    items.forEach(function (it) {
+      if (it.kind === 'custom' || !it.product_id) return;
+      var idx = list.findIndex(function (x) { return String(x.id) === String(it.product_id); });
+      if (idx >= 0) list[idx].stock = Math.max(0, (Number(list[idx].stock) || 0) - (it.qty || 1));
+    });
+    ss('products', list);
+  }
+  function restockLocal(items) {
+    var list = ls('products');
+    items.forEach(function (it) {
+      if (it.kind === 'custom' || !it.product_id) return;
+      var idx = list.findIndex(function (x) { return String(x.id) === String(it.product_id); });
+      if (idx >= 0) list[idx].stock = (Number(list[idx].stock) || 0) + (it.qty || 1);
+    });
+    ss('products', list);
+  }
+  function shopItems(order) { return (order.items || []).filter(function (it) { return it.kind !== 'custom' && it.product_id; }); }
+  function findOrder(id) { return ls('orders').find(function (x) { return String(x.id) === String(id); }) || null; }
+
   /* ---------- PUBLIC API ---------- */
   function norm(p) {
     return Object.assign({}, p, { images: p.images || [], in_stock: p.in_stock !== false && (p.stock == null || p.stock > 0) });
@@ -155,6 +177,10 @@ window.AQDB = (function () {
     removeProduct: function (id) {
       if (supabase) return supabase.from('products').delete().eq('id', id).then(function (r) { return { error: r.error ? r.error.message : null }; });
       ss('products', ls('products').filter(function (x) { return String(x.id) !== String(id); })); return Promise.resolve({ error: null });
+    },
+    getStock: function (productId) {
+      if (supabase) return supabase.from('products').select('stock').eq('id', productId).single().then(function (r) { return r.data ? Number(r.data.stock) || 0 : 0; });
+      var p = from(ls('products'), productId); return Promise.resolve(p ? Number(p.stock) || 0 : 0);
     },
 
     /* Design options */
@@ -284,10 +310,15 @@ window.AQDB = (function () {
 
     /* Orders */
     placeOrder: function (order) {
-      var list = ls('orders');
       order = Object.assign({ id: nid(), number: 'AQ-' + Date.now().toString().slice(-6), created_at: new Date().toISOString(), status: 'pending', escrow: 'held' }, order);
-      if (supabase) return supabase.from('orders').insert(order).then(function (r) { return { error: r.error ? r.error.message : null, order: r.data && r.data[0] ? r.data[0] : order }; });
-      list.unshift(order); ss('orders', list); return Promise.resolve({ error: null, order: order });
+      var items = shopItems(order);
+      if (supabase) return supabase.from('orders').insert(order).then(function (r) {
+        if (r.error) return { error: r.error.message };
+        return supabase.rpc('sell_stock', { items: items }).then(function () { return { error: null, order: r.data[0] }; });
+      });
+      var list = ls('orders'); list.unshift(order); ss('orders', list);
+      sellStockLocal(items);
+      return Promise.resolve({ error: null, order: order });
     },
     myOrders: function () {
       var u = window.AQAuth.currentUser(); if (!u) return Promise.resolve([]);
@@ -299,9 +330,14 @@ window.AQDB = (function () {
       return Promise.resolve(ls('orders'));
     },
     updateOrder: function (id, patch) {
-      if (supabase) return supabase.from('orders').update(patch).eq('id', id).then(function (r) { return { error: r.error ? r.error.message : null }; });
+      if (supabase) return supabase.from('orders').update(patch).eq('id', id).then(function (r) {
+        if (r.error) return { error: r.error.message };
+        if (patch.status === 'cancelled') return supabase.rpc('restock_order', { p_order_id: id }).then(function () { return { error: null }; });
+        return { error: null };
+      });
       var list = ls('orders'); var i = list.findIndex(function (x) { return String(x.id) === String(id); });
       if (i >= 0) { list[i] = Object.assign({}, list[i], patch); ss('orders', list); }
+      if (patch.status === 'cancelled') { var o = findOrder(id); if (o) restockLocal(shopItems(o)); }
       return Promise.resolve({ error: null });
     },
 

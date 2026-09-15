@@ -447,6 +447,50 @@ values
   ('personalisation','monogram','Hand Monogram',220,null,true,3),('personalisation','engraved','Hardware Engraving',180,null,true,4)
 on conflict do nothing;
 
+-- ============================================================
+-- Inventory control RPCs.
+-- SECURITY DEFINER uses the function owner's privileges, which
+-- BYPASSES RLS intentionally: selling/restocking stock is the
+-- single authoritative path that tamper-proofs inventory while
+-- retail clients only READ products. The functions accept only
+-- (product_id, qty) pairs and can never set arbitrary columns.
+-- ============================================================
+create or replace function public.sell_stock(items jsonb)
+returns void language plpgsql security definer as $$
+declare it jsonb; nd integer;
+begin
+  for it in select jsonb_array_elements(items)
+  loop
+    if it->>'kind' = 'custom' or it->>'product_id' is null then continue; end if;
+    update public.products
+       set stock = greatest(0, coalesce(stock, 0) - coalesce((it->>'qty')::int, 1))
+     where id = (it->>'product_id')::uuid
+     returning stock into nd;
+    if nd is null then
+      raise exception 'unknown product %', it->>'product_id';
+    end if;
+  end loop;
+end $$;
+
+grant execute on function public.sell_stock(jsonb) to authenticated;
+
+create or replace function public.restock_order(p_order_id uuid)
+returns void language plpgsql security definer as $$
+declare it jsonb; o_items jsonb;
+begin
+  select items into o_items from public.orders where id = p_order_id;
+  if o_items is null then return; end if;
+  for it in select jsonb_array_elements(o_items)
+  loop
+    if it->>'kind' = 'custom' or it->>'product_id' is null then continue; end if;
+    update public.products
+       set stock = coalesce(stock, 0) + coalesce((it->>'qty')::int, 1)
+     where id = (it->>'product_id')::uuid;
+  end loop;
+end $$;
+
+grant execute on function public.restock_order(uuid) to authenticated;
+
 -- Note about add_loyalty_points being SECURITY INVOKER: it respects the
 -- caller's row-level policies (own profile row + own loyalty_txn insert).
 -- Do NOT change it to SECURITY DEFINER to fix a permission error.

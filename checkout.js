@@ -12,18 +12,24 @@ window.CHECKOUT = (function () {
       : '<span class="badge green"><i class="fas fa-shield-halved"></i> Ready</span>';
     var img = it.image ? '<img src="' + it.image + '" style="width:64px;height:64px;object-fit:cover;border-radius:10px" alt="">' : '<div style="width:64px;height:64px;border-radius:10px;background:var(--gold-15);display:grid;place-items:center"><i class="fas fa-crown gold"></i></div>';
     var unitLine = it.kind === 'custom' ? 'Deposit ' + it.deposit_pct + '%' : 'Full price';
-    return '<div class="card" style="padding:16px;display:flex;gap:14px;align-items:center;margin-bottom:12px">' +
+    var stock = it.product ? Number(it.product.stock) || 0 : 0;
+    var soldOut = it.kind !== 'custom' && it.product && it.product.in_stock === false;
+    var atMax = it.kind !== 'custom' && it.qty >= stock && stock > 0;
+    var lowStock = it.kind !== 'custom' && !soldOut && stock > 0 && stock <= 5;
+    return '<div class="card" style="padding:16px;display:flex;gap:14px;align-items:center;margin-bottom:12px' + (soldOut ? ';opacity:.55' : '') + '">' +
       img +
       '<div style="flex:1;min-width:0">' +
         '<div class="row" style="gap:8px"><b>' + window.esc(it.name) + '</b>' + badge + '</div>' +
         '<div class="muted" style="font-size:.82rem">' + unitLine + ' &middot; ' + fmt(it.unit) + ' each</div>' +
+        (soldOut ? '<div style="font-size:.78rem;color:#c0392b"><i class="fas fa-triangle-exclamation"></i> Sold out - remove this item</div>' :
+         lowStock ? '<div style="font-size:.78rem;color:var(--gold)"><i class="fas fa-fire"></i> Only ' + stock + ' left</div>' : '') +
       '</div>' +
       (it.kind === 'custom'
         ? '<div class="muted" style="font-size:.82rem">' + fmt(it.unit) + '</div>'
         : '<div class="row">' +
             '<button class="btn btn-ghost btn-sm" data-d="-1" data-k="' + it.key + '">-</button>' +
             '<b>' + it.qty + '</b>' +
-            '<button class="btn btn-ghost btn-sm" data-d="1" data-k="' + it.key + '">+</button>' +
+            '<button class="btn btn-ghost btn-sm" data-d="1" data-k="' + it.key + '"' + (atMax || soldOut ? ' disabled' : '') + '>+</button>' +
           '</div>') +
       '<button class="btn btn-danger btn-sm" data-del="' + it.key + '"><i class="fas fa-trash"></i></button>' +
     '</div>';
@@ -58,7 +64,15 @@ window.CHECKOUT = (function () {
         '<button class="btn btn-primary btn-block" id="toCheckout" style="margin-top:6px"><i class="fas fa-lock"></i> Secure checkout</button>' +
       '</div>';
 
-    wrap.querySelectorAll('[data-d]').forEach(function (b) { b.addEventListener('click', function () { AQCart.qty(b.getAttribute('data-k'), +b.getAttribute('data-d')); renderCart(); }); });
+    wrap.querySelectorAll('[data-d]').forEach(function (b) { b.addEventListener('click', function () {
+      var k = b.getAttribute('data-k');
+      var d = +b.getAttribute('data-d');
+      if (d > 0) {
+        var it = items.find(function (x) { return x.key === k; });
+        if (it && it.product && it.qty >= (Number(it.product.stock) || 0)) return;
+      }
+      AQCart.qty(k, d); renderCart();
+    }); });
     wrap.querySelectorAll('[data-del]').forEach(function (b) { b.addEventListener('click', function () { AQCart.remove(b.getAttribute('data-del')); renderCart(); }); });
     document.getElementById('toCheckout').addEventListener('click', function () {
       if (!window.AQAuth.ensureClientOnly()) return;
@@ -154,6 +168,21 @@ window.CHECKOUT = (function () {
       if (t.subtotal >= AQ.FREE_SHIPPING_OVER) chosenShip = 0;
 
       btn.classList.add('loading'); btn.disabled = true;
+      var stockIssues = [];
+      for (var j = 0; j < items.length; j++) {
+        var ci = items[j];
+        if (ci.kind !== 'custom' && ci.product_id) {
+          var fresh = await DB.getProduct(ci.product_id);
+          var avail = fresh ? Number(fresh.stock) || 0 : 0;
+          if (!fresh || avail < ci.qty) stockIssues.push(ci.name + (fresh ? ' (only ' + avail + ' left)' : ' (no longer available)'));
+        }
+      }
+      if (stockIssues.length) {
+        window.toast('Stock issue: ' + stockIssues.join('; '), 'err');
+        btn.classList.remove('loading'); btn.disabled = false;
+        location.reload();
+        return;
+      }
       /* demo gateway delay */
       await new Promise(function (r) { setTimeout(r, 900); });
 

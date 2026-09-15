@@ -8,6 +8,7 @@ window.SHOP = (function () {
     var flags = '';
     if (p.featured) flags += '<span class="tag">Signature</span>';
     if (p.in_stock === false) flags += '<span class="tag sold">Sold out</span>';
+    else if (p.stock > 0 && p.stock <= 5) flags += '<span class="tag low">Only ' + p.stock + ' left</span>';
     var img = p.images && p.images[0] ? '<img src="' + p.images[0] + '" alt="' + window.esc(p.name) + '" loading="lazy">' : '';
     return '<a href="product.html?id=' + p.id + '" class="card card-hover product-card">' +
       '<div class="thumb"><div class="flags">' + flags + '</div>' + img + '</div>' +
