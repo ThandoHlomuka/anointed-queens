@@ -25,7 +25,7 @@ window.AQ = (function () {
   return {
     NAME: 'Anointed Queens',
     TAGLINE: 'Handcrafted custom bags, crowned in craft.',
-    VERSION: '1.2.0',
+    VERSION: '1.3.0',
     THEME: { gold: '#D4AF37', goldBright: '#FFD700', black: '#0A0A0A' },
     CURRENCY: 'ZAR',
     LOCALE: 'en-ZA',

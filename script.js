@@ -68,7 +68,7 @@
     if (!wrap) return;
     wrap.innerHTML = '<div class="nav">' +
       '<div class="nav-inner">' +
-        '<a href="index.html" class="brand"><span class="mark"><i class="fas fa-crown"></i></span><span>Anointed Queens</span></a>' +
+        '<a href="index.html" class="brand"><span class="mark"><img src="assets/logo.png?v=4" alt="Anointed Queens"></span><span>Anointed Queens</span></a>' +
         '<nav class="nav-links" aria-label="Main">' + html + '</nav>' +
         '<div class="nav-cta">' +
           '<button class="icon-btn" id="wishBtn" aria-label="Wishlist" type="button"><i class="fas fa-heart"></i></button>' +

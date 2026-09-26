@@ -1,5 +1,5 @@
 /* ANNOINTED QUEENS service worker */
-const CACHE = 'aq-v3';
+const CACHE = 'aq-v4';
 
 const STABLE_ASSETS = [
   './',
@@ -15,6 +15,8 @@ const STABLE_ASSETS = [
   './assets/icons/icon-192.png',
   './assets/icons/icon-512.png',
   './assets/icons/icon-512-maskable.png',
+  './assets/icons/favicon.png',
+  './assets/logo.png',
   'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js',
   'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css',
   'https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700;900&family=Inter:wght@300;400;500;600;700&family=Dancing+Script:wght@600;700&display=swap'
