@@ -1,5 +1,5 @@
 /* ANNOINTED QUEENS service worker */
-const CACHE = 'aq-v6';
+const CACHE = 'aq-v5';
 
 const STABLE_ASSETS = [
   './',
@@ -25,23 +25,6 @@ const STABLE_ASSETS = [
   './assets/icons/icon-512-maskable.png',
   './assets/icons/favicon.png',
   './assets/logo.png',
-  './assets/designer/tote-c1.jpg',
-  './assets/designer/satchel-v1.jpg',
-  './assets/designer/crossbody-c1.jpg',
-  './assets/designer/clutch-c2.jpg',
-  './assets/designer/mini-c1.jpg',
-  './assets/designer/weekender-c1.jpg',
-  './assets/designer/leather-c1.jpg',
-  './assets/designer/leather-c2.jpg',
-  './assets/designer/suede-c1.jpg',
-  './assets/designer/boucle-c1.jpg',
-  './assets/designer/strap-c1.jpg',
-  './assets/designer/chain-c1.jpg',
-  './assets/designer/wooden-c1.jpg',
-  './assets/designer/longstrap-c1.jpg',
-  './assets/designer/crossover-c1.jpg',
-  './assets/designer/harness-c1.jpg',
-  './assets/designer/cotton-c1.jpg',
   'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js',
   'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css',
   'https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700;900&family=Inter:wght@300;400;500;600;700&family=Dancing+Script:wght@600;700&display=swap'

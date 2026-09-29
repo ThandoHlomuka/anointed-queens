@@ -1,7 +1,7 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-  <script src="polyfill.js?v=6"></script>
+  <script src="polyfill.js?v=5"></script>
   <!-- AQ:SCRIPTS -->
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -14,7 +14,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700;900&family=Inter:wght@300;400;500;600;700&family=Dancing+Script:wght@600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-<link rel="stylesheet" href="style.css?v=6">
+<link rel="stylesheet" href="style.css?v=5">
 <!-- AQ:SEO -->
   <link rel="canonical" href="https://anointed-queens.vercel.app/configurator.html">
   <meta name="description" content="Design a one-of-a-kind Anointed Queens bag - pick your style, leather, colour, size, hardware and personalisation. 50% deposit opens production, escrow protected.">
@@ -41,18 +41,7 @@
     <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(320px,100%),420px));gap:24px;align-items:start">
       <div id="stepBody" style="min-height:260px"></div>
       <div>
-        <div class="bag-stage" id="bagStage" style="min-height:220px">
-          <div class="bag-show">
-            <img class="bag-show-img" src="assets/designer/tote-c1.jpg" alt="Bespoke bag preview" loading="lazy">
-            <div class="bag-show-tint" style="background:#2A2118"></div>
-            <span class="bag-show-label">Bespoke</span>
-          </div>
-          <div class="parts-rail">
-            <div class="part-chip"><div class="part-chip-img" style="background-image:url(assets/designer/leather-c2.jpg)" role="img" aria-label="Full-Grain Leather"></div><span class="part-chip-role">Material</span><span class="part-chip-label">Full-Grain Leather</span></div>
-            <div class="part-chip"><div class="part-chip-img" style="background-image:url(assets/designer/strap-c1.jpg)" role="img" aria-label="Leather Top Handle"></div><span class="part-chip-role">Strap</span><span class="part-chip-label">Leather Top Handle</span></div>
-            <div class="part-chip"><div class="part-chip-img" style="background-image:url(assets/designer/harness-c1.jpg)" role="img" aria-label="Antique Gold hardware"></div><span class="part-chip-role">Hardware</span><span class="part-chip-label">Antique Gold</span></div>
-          </div>
-        </div>
+        <div class="bag-stage" id="bagStage" style="min-height:220px"><div class="bag-illus"><div class="bag-strap"></div><div class="bag-flap"></div><div class="bag-lock"></div><div class="bag-body"></div></div></div>
         <div id="bagInfo" class="muted" style="text-align:center;margin-top:12px;font-size:.9rem">Current estimate: loading...</div>
       </div>
     </div>
@@ -66,18 +55,18 @@
 </section>
 <div id="footerSite"></div>
 <div id="toastWrap"></div>
-<script src="config.js?v=6"></script>
+<script src="config.js?v=5"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
-<script src="auth.js?v=6"></script>
-<script src="db.js?v=6"></script>
-<script src="cart.js?v=6"></script>
-<script src="script.js?v=6"></script>
-<script src="configurator.js?v=6"></script>
+<script src="auth.js?v=5"></script>
+<script src="db.js?v=5"></script>
+<script src="cart.js?v=5"></script>
+<script src="script.js?v=5"></script>
+<script src="configurator.js?v=5"></script>
 <script>window.BODY_ACTIVE = 'Design Your Own'; if (window.AQDB && window.AQDB.init) window.AQDB.init();</script>
-<script src="pwa.js?v=6"></script>
+<script src="pwa.js?v=5"></script>
 <!-- AQ:SHARE -->
   <div data-share aria-hidden="true"></div>
-  <script src="shares.js?v=6"></script>
+  <script src="shares.js?v=5"></script>
   <!-- /AQ:SHARE -->
 </body>
 </html>
