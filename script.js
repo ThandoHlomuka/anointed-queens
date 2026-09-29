@@ -55,10 +55,12 @@
     var links = [
       { href: 'index.html', label: 'Home', icon: 'fa-house' },
       { href: 'shop.html', label: 'Shop', icon: 'fa-bag-shopping' },
-      { href: 'configurator.html', label: 'Design Your Own', icon: 'fa-wand-magic-sparkles' },
+      { href: 'custom.html', label: 'Custom Orders', icon: 'fa-wand-magic-sparkles' },
+      { href: 'corporate.html', label: 'Corporate', icon: 'fa-briefcase' },
       { href: 'about.html', label: 'Our Story', icon: 'fa-crown' },
       { href: 'journal.html', label: 'Journal', icon: 'fa-book-open' },
-      { href: 'faq.html', label: 'FAQ', icon: 'fa-circle-question' }
+      { href: 'faq.html', label: 'FAQ', icon: 'fa-circle-question' },
+      { href: 'contact.html', label: 'Contact', icon: 'fa-paper-plane' }
     ];
     var html = links.map(function (l) {
       return '<a href="' + l.href + '" class="nav-link' + (active === l.label ? ' active' : '') + '">' + l.label + '</a>';
@@ -68,7 +70,7 @@
     if (!wrap) return;
     wrap.innerHTML = '<div class="nav">' +
       '<div class="nav-inner">' +
-        '<a href="index.html" class="brand"><span class="mark"><img src="assets/logo.png?v=4" alt="Anointed Queens"></span><span>Anointed Queens</span></a>' +
+        '<a href="index.html" class="brand"><span class="mark"><img src="assets/logo.png?v=5" alt="Anointed Queens"></span><span>Anointed Queens</span></a>' +
         '<nav class="nav-links" aria-label="Main">' + html + '</nav>' +
         '<div class="nav-cta">' +
           '<button class="icon-btn" id="wishBtn" aria-label="Wishlist" type="button"><i class="fas fa-heart"></i></button>' +
@@ -104,16 +106,16 @@
     f.innerHTML =
       '<footer class="footer">' +
         '<div class="footer-grid">' +
-          '<div><h4>Anointed Queens</h4><p style="font-size:.9rem;color:var(--text-muted)">Handcrafted custom bags for the discerning. Every piece is designed, cut and finished by hand in our atelier.</p></div>' +
-          '<div><h4>Shop</h4><ul><li><a href="shop.html">All Bags</a></li><li><a href="configurator.html">Design Your Own</a></li><li><a href="wishlist.html">Wishlist</a></li><li><a href="loyalty.html">Anointed Club</a></li></ul></div>' +
-          '<div><h4>House</h4><ul><li><a href="about.html">Our Story</a></li><li><a href="journal.html">Journal</a></li><li><a href="faq.html">FAQ</a></li><li><a href="contact.html">Contact</a></li></ul></div>' +
+          '<div><h4>Anointed Queens</h4><p style="font-size:.9rem;color:var(--text-muted)">Purpose-built bags for everyday queens - ready-to-ship, custom and corporate. Handcrafted in South Africa.</p></div>' +
+          '<div><h4>Shop</h4><ul><li><a href="shop.html">All Bags</a></li><li><a href="custom.html">Custom Orders</a></li><li><a href="configurator.html">Design Your Own</a></li><li><a href="corporate.html">Corporate &amp; Wholesale</a></li><li><a href="wishlist.html">Wishlist</a></li><li><a href="loyalty.html">Anointed Club</a></li></ul></div>' +
+          '<div><h4>House</h4><ul><li><a href="about.html">Our Story</a></li><li><a href="journal.html">Journal</a></li><li><a href="shipping-returns.html">Shipping &amp; Returns</a></li><li><a href="faq.html">FAQ</a></li><li><a href="contact.html">Contact</a></li></ul></div>' +
           '<div><h4>Account</h4><ul>' +
             (window.AQAuth && AQAuth.currentUser() ? '<li><a href="orders.html">My Orders</a></li><li><a href="account.html">Profile</a></li><li><a href="#" id="footLogout">Sign out</a></li>' : '<li><a href="login.html">Sign in</a></li><li><a href="register.html">Join the Club</a></li>') +
           '</ul></div>' +
         '</div>' +
         '<div class="footer-bottom">' +
           '<span>&copy; ' + y + ' Anointed Queens. All rights reserved. Crowned in craft.</span>' +
-          '<span>Escrow protected &bull; Handcrafted in South Africa</span>' +
+          '<span>Crafted with purpose &bull; Handcrafted in South Africa</span>' +
         '</div>' +
       '</footer>';
     var lo = document.getElementById('footLogout');

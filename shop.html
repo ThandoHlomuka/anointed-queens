@@ -1,33 +1,33 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <script src="polyfill.js?v=4"></script>
+  <script src="polyfill.js?v=5"></script>
   <!-- AQ:SCRIPTS -->
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Shop - Anointed Queens | Ready-to-ship Custom Bags</title>
-<meta name="description" content="Browse ready-to-ship handcrafted bags from Anointed Queens. Leather totes, clutches, satchels, mini bags and more. Escrow protected.">
-<meta property="og:title" content="Shop | Anointed Queens">
+<title>Shop the Collection | Anointed Queens</title>
+<meta name="description" content="Shop ready-to-ship handbags from Anointed Queens - totes, clutches, satchels, mini bags, crossbodies and backpacks, handcrafted in South Africa with free courier over R1,500.">
+<meta property="og:title" content="Shop the Collection | Anointed Queens">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="assets/icons/favicon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700;900&family=Inter:wght@300;400;500;600;700&family=Dancing+Script:wght@600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-<link rel="stylesheet" href="style.css?v=4">
+<link rel="stylesheet" href="style.css?v=5">
 <!-- AQ:SEO -->
   <link rel="canonical" href="https://anointed-queens.vercel.app/shop.html">
-  <meta name="description" content="Browse the Anointed Queens collection - totes, clutches, satchels, mini bags, crossbodies and backpacks, handcrafted in full-grain leather with gold hardware.">
+  <meta name="description" content="Shop the Anointed Queens collection - ready-to-ship totes, clutches, satchels, mini bags, crossbodies and backpacks, handcrafted in South Africa with gold hardware. Free courier over R1,500; custom and corporate orders welcome.">
   <meta name="theme-color" content="#0A0A0A">
   <meta property="og:type" content="website">
   <meta property="og:site_name" content="Anointed Queens">
   <meta property="og:title" content="Shop the Collection | Anointed Queens">
-  <meta property="og:description" content="Browse the Anointed Queens collection - totes, clutches, satchels, mini bags, crossbodies and backpacks, handcrafted in full-grain leather with gold hardware.">
+  <meta property="og:description" content="Ready-to-ship handbags from Anointed Queens - totes, clutches, satchels, mini bags, crossbodies and backpacks, handcrafted in South Africa. Free courier over R1,500.">
   <meta property="og:url" content="https://anointed-queens.vercel.app/shop.html">
   <meta property="og:image" content="https://anointed-queens.vercel.app/assets/icons/icon-512-maskable.png">
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="Shop the Collection | Anointed Queens">
-  <meta name="twitter:description" content="Browse the Anointed Queens collection - totes, clutches, satchels, mini bags, crossbodies and backpacks, handcrafted in full-grain leather with gold hardware.">
+  <meta name="twitter:description" content="Ready-to-ship handbags from Anointed Queens - totes, clutches, satchels, mini bags, crossbodies and backpacks, handcrafted in South Africa. Free courier over R1,500.">
   <meta name="twitter:image" content="https://anointed-queens.vercel.app/assets/icons/icon-512-maskable.png">
   <!-- /AQ:SEO -->
 </head>
@@ -35,8 +35,13 @@
 <div id="navSite"></div>
 <section class="section">
   <div class="wrap">
-    <h1>Shop the collection</h1>
-    <p class="muted" style="margin-bottom:18px">Ready-to-ship pieces, crafted in our atelier. Every order is <b class="gold">escrow protected</b>.</p>
+    <span class="eyebrow">Shop the Collection</span>
+    <h1>Ready-to-ship, chosen by you</h1>
+    <p class="muted" style="margin:10px 0 18px;max-width:720px">Every style below is built for a real day - organised pockets, premium leathers and gold hardware - ready to leave our atelier within 2 business days. Want it your way? <a href="custom.html">Order custom</a> or explore <a href="corporate.html">corporate &amp; wholesale</a>.</p>
+    <div class="grid-bes" style="margin-bottom:22px">
+      <a class="card card-hover" href="custom.html" style="padding:18px;text-decoration:none;display:flex;gap:14px;align-items:center"><i class="fas fa-wand-magic-sparkles gold" style="font-size:1.4rem"></i><div><b>Custom Orders</b><div class="muted" style="font-size:.85rem">A bag built around your life</div></div></a>
+      <a class="card card-hover" href="corporate.html" style="padding:18px;text-decoration:none;display:flex;gap:14px;align-items:center"><i class="fas fa-briefcase gold" style="font-size:1.4rem"></i><div><b>Corporate &amp; Wholesale</b><div class="muted" style="font-size:.85rem">Bulk and branded from 20 units</div></div></a>
+    </div>
     <form id="filterForm" class="row" style="gap:10px;margin-bottom:6px">
       <div class="search-box"><i class="fas fa-magnifying-glass gold"></i><input id="q" type="search" placeholder="Search bags..." aria-label="Search"></div>
       <select class="select" id="cat" aria-label="Category"><option value="">All categories</option></select>
@@ -49,18 +54,18 @@
 </section>
 <div id="footerSite"></div>
 <div id="toastWrap"></div>
-<script src="config.js?v=4"></script>
+<script src="config.js?v=5"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
-<script src="auth.js?v=4"></script>
-<script src="db.js?v=4"></script>
-<script src="cart.js?v=4"></script>
-<script src="shop.js?v=4"></script>
-<script src="script.js?v=4"></script>
+<script src="auth.js?v=5"></script>
+<script src="db.js?v=5"></script>
+<script src="cart.js?v=5"></script>
+<script src="shop.js?v=5"></script>
+<script src="script.js?v=5"></script>
 <script>window.BODY_ACTIVE = 'Shop'; if (window.AQDB && window.AQDB.init) window.AQDB.init();</script>
-<script src="pwa.js?v=4"></script>
+<script src="pwa.js?v=5"></script>
 <!-- AQ:SHARE -->
   <div data-share aria-hidden="true"></div>
-  <script src="shares.js?v=4"></script>
+  <script src="shares.js?v=5"></script>
   <!-- /AQ:SHARE -->
 </body>
 </html>

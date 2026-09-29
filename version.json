@@ -1,7 +1,8 @@
 {
-  "version": "1.3.0",
-  "title": "Anointed Queens - official brand logo live across the site",
+  "version": "1.4.0",
+  "title": "Full site content refresh aligned to the Anointed Queens content brief",
   "notes": [
+    "1.4.0: full site content refresh - home, shop, about, custom orders, corporate & wholesale, shipping & returns, FAQ, contact and journal pages rewritten to the approved content brief ('Crowned in craft. Carried with purpose.'), using chosen business defaults (2-4 week custom turnaround, 20-unit bulk minimum, 50% deposit, The Courier Guy, free delivery over R1,500, 7-day returns, Sandton pickup by appointment, Mon-Fri 08:00-17:00 / Sat 09:00-13:00); contact details centralised in config.js AQ.CONTACT for easy editing; new pages custom.html, corporate.html and shipping-returns.html; nav + footer + sitemap + service worker updated; tokens ?v=5, service worker cache aq-v5",
     "1.3.0: official company logo artwork adopted - new brand mark in the site header (assets/logo.png), custom favicon (assets/icons/favicon.png) and PWA icons regenerated from the logo; social-share (og:image / twitter:image) paths fixed to the maskable icon; tokens bumped to ?v=4, service worker cache aq-v4",
     "1.2.0: selling the in-house collection with real inventory - stock is decremented on every purchase and restored on refunds (Supabase sell_stock / restock_order RPCs, demo localStorage counter), low-stock 'Only X left' and sold-out states across shop, product detail, bag and checkout; add-to-bag and checkout refuse overselling; admin products screen gains quick +5/+10/+20 restock and low-stock warnings; e-commerce probe automates buy/refund/restock flows"
   ]

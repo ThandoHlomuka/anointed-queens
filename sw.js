@@ -1,9 +1,17 @@
 /* ANNOINTED QUEENS service worker */
-const CACHE = 'aq-v4';
+const CACHE = 'aq-v5';
 
 const STABLE_ASSETS = [
   './',
   './index.html',
+  './shop.html',
+  './custom.html',
+  './corporate.html',
+  './about.html',
+  './shipping-returns.html',
+  './faq.html',
+  './contact.html',
+  './journal.html',
   './style.css',
   './polyfill.js',
   './shares.js',

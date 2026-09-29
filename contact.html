@@ -1,48 +1,68 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <script src="polyfill.js?v=4"></script>
+  <script src="polyfill.js?v=5"></script>
   <!-- AQ:SCRIPTS -->
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Contact - Anointed Queens</title>
-<meta name="description" content="Contact the Anointed Queens atelier for custom orders, large commissions and partnerships.">
+<title>Contact Us | Anointed Queens</title>
+<meta name="description" content="Contact the Anointed Queens atelier - WhatsApp, email, phone or visit our Sandton studio for custom orders, ready-to-ship bags and corporate enquiries.">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="assets/icons/favicon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700;900&family=Inter:wght@300;400;500;600;700&family=Dancing+Script:wght@600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-<link rel="stylesheet" href="style.css?v=4">
+<link rel="stylesheet" href="style.css?v=5">
 <!-- AQ:SEO -->
   <link rel="canonical" href="https://anointed-queens.vercel.app/contact.html">
-  <meta name="description" content="Talk to the Anointed Queens atelier about bespoke commissions, events and wholesale.">
+  <meta name="description" content="Contact the Anointed Queens atelier - WhatsApp, email, phone or visit our Sandton studio. Custom orders, ready-to-ship bags and corporate &amp; wholesale enquiries welcome.">
   <meta name="theme-color" content="#0A0A0A">
   <meta property="og:type" content="website">
   <meta property="og:site_name" content="Anointed Queens">
   <meta property="og:title" content="Contact Us | Anointed Queens">
-  <meta property="og:description" content="Talk to the Anointed Queens atelier about bespoke commissions, events and wholesale.">
+  <meta property="og:description" content="WhatsApp, email, phone or visit our Sandton studio. Custom orders, ready-to-ship bags and corporate &amp; wholesale enquiries welcome.">
   <meta property="og:url" content="https://anointed-queens.vercel.app/contact.html">
   <meta property="og:image" content="https://anointed-queens.vercel.app/assets/icons/icon-512-maskable.png">
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="Contact Us | Anointed Queens">
-  <meta name="twitter:description" content="Talk to the Anointed Queens atelier about bespoke commissions, events and wholesale.">
+  <meta name="twitter:description" content="WhatsApp, email, phone or visit our Sandton studio. Custom orders, ready-to-ship bags and corporate &amp; wholesale enquiries welcome.">
   <meta name="twitter:image" content="https://anointed-queens.vercel.app/assets/icons/icon-512-maskable.png">
   <!-- /AQ:SEO -->
 </head>
 <body>
 <div id="navSite"></div>
 <section class="section">
-  <div class="wrap" style="max-width:820px">
+  <div class="wrap" style="max-width:980px">
     <span class="eyebrow">Contact</span>
-    <h1>Speak with the atelier</h1>
-    <p class="muted" style="margin-bottom:20px">Questions, large commissions, bridal parties, corporate gifts - we would love to talk.</p>
+    <h1>We'd love to <span class="gold-bright">hear from you</span></h1>
+    <p class="muted" style="margin:10px 0 24px;max-width:680px">Ready-to-ship orders, custom commissions, corporate quotes or a simple question - reach us on any channel below.</p>
+
+    <div class="grid-bes" style="margin-bottom:28px">
+      <a class="card card-hover" id="cWa" href="#" target="_blank" rel="noopener" style="padding:18px;text-decoration:none;display:flex;gap:14px;align-items:center"><span style="width:44px;height:44px;border-radius:50%;background:#25D36621;display:grid;place-items:center;color:#25D366;font-size:1.3rem"><i class="fa-brands fa-whatsapp"></i></span><div><b>WhatsApp</b><div class="muted" style="font-size:.85rem">Fastest reply - message us anytime</div></div></a>
+      <a class="card card-hover" id="cMail" href="#" style="padding:18px;text-decoration:none;display:flex;gap:14px;align-items:center"><span style="width:44px;height:44px;border-radius:50%;background:rgba(212,175,55,.14);display:grid;place-items:center;color:var(--gold);font-size:1.3rem"><i class="fas fa-envelope"></i></span><div><b>Email</b><div class="muted" style="font-size:.85rem" id="cMailTxt"></div></div></a>
+      <a class="card card-hover" id="cTel" href="#" style="padding:18px;text-decoration:none;display:flex;gap:14px;align-items:center"><span style="width:44px;height:44px;border-radius:50%;background:rgba(74,119,212,.14);display:grid;place-items:center;color:var(--info);font-size:1.3rem"><i class="fas fa-phone"></i></span><div><b>Call us</b><div class="muted" style="font-size:.85rem" id="cTelTxt"></div></div></a>
+    </div>
+
+    <div class="grid-bes" style="margin-bottom:28px">
+      <div class="panel"><i class="fas fa-location-dot gold" style="font-size:1.4rem"></i><h4 style="margin-top:10px">Visit the atelier</h4><p class="muted" style="font-size:.9rem">Sandton, Johannesburg (by appointment). Pickup and consultations welcome.</p></div>
+      <div class="panel"><i class="fas fa-clock gold" style="font-size:1.4rem"></i><h4 style="margin-top:10px">Hours</h4><p class="muted" style="font-size:.9rem" id="cHours"></p></div>
+    </div>
+
+    <div class="row" style="gap:16px;margin-bottom:28px">
+      <a class="icon-btn" id="cIg" href="#" target="_blank" rel="noopener" aria-label="Instagram"><i class="fa-brands fa-instagram"></i></a>
+      <a class="icon-btn" id="cFb" href="#" target="_blank" rel="noopener" aria-label="Facebook"><i class="fa-brands fa-facebook-f"></i></a>
+      <a class="icon-btn" id="cTk" href="#" target="_blank" rel="noopener" aria-label="TikTok"><i class="fa-brands fa-tiktok"></i></a>
+    </div>
+
+    <span class="eyebrow">Write to us</span>
+    <h2 style="margin:8px 0 18px">Send an enquiry</h2>
     <form id="contactForm">
       <div class="grid-products" style="padding-bottom:14px">
         <div class="field"><label>Name</label><input class="input" id="cName"></div>
         <div class="field"><label>Email</label><input class="input" id="cEmail" type="email"></div>
-        <div class="field"><label>Subject</label><input class="input" id="cSubject" placeholder="Custom order, bridal party, corporate..."></div>
-        <div class="field"><label>Message</label><textarea class="textarea" id="cMessage"></textarea></div>
+        <div class="field"><label>Subject</label><input class="input" id="cSubject" placeholder="Custom order, corporate quote, question..."></div>
+        <div class="field"><label>Message</label><textarea class="textarea" id="cMessage" placeholder="Tell us about your dream bag, your occasion, or your question."></textarea></div>
       </div>
       <button class="btn btn-primary" id="cSend"><i class="fas fa-paper-plane"></i> Send message</button>
     </form>
@@ -50,18 +70,35 @@
 </section>
 <div id="footerSite"></div>
 <div id="toastWrap"></div>
-<script src="config.js?v=4"></script>
+<script src="config.js?v=5"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
-<script src="auth.js?v=4"></script>
-<script src="db.js?v=4"></script>
-<script src="cart.js?v=4"></script>
-<script src="script.js?v=4"></script>
-<script src="account.js?v=4"></script>
-<script>window.BODY_ACTIVE = 'Contact'; if (window.AQDB && window.AQDB.init) window.AQDB.init();</script>
-<script src="pwa.js?v=4"></script>
+<script src="auth.js?v=5"></script>
+<script src="db.js?v=5"></script>
+<script src="cart.js?v=5"></script>
+<script src="script.js?v=5"></script>
+<script src="account.js?v=5"></script>
+<script>window.BODY_ACTIVE = 'Contact'; if (window.AQDB && window.AQDB.init) window.AQDB.init();
+(function () {
+  var c = window.AQ && AQ.CONTACT;
+  if (!c) return;
+  var wa = document.getElementById('cWa');
+  if (wa && c.whatsapp) wa.href = 'https://wa.me/' + c.whatsapp;
+  var ma = document.getElementById('cMail');
+  if (ma && c.email) { ma.href = 'mailto:' + c.email; var mt = document.getElementById('cMailTxt'); if (mt) mt.textContent = c.email; }
+  var te = document.getElementById('cTel');
+  if (te && c.phoneIntl) { te.href = 'tel:' + c.phoneIntl; var tt = document.getElementById('cTelTxt'); if (tt) tt.textContent = c.phoneDisplay; }
+  var hr = document.getElementById('cHours');
+  if (hr && c.hours) hr.innerHTML = c.hours.replace(/,/g, '<br>');
+  [['cIg', 'instagram'], ['cFb', 'facebook'], ['cTk', 'tiktok']].forEach(function (p) {
+    var el = document.getElementById(p[0]);
+    if (el && c.social && c.social[p[1]]) el.href = c.social[p[1]];
+  });
+})();
+</script>
+<script src="pwa.js?v=5"></script>
 <!-- AQ:SHARE -->
   <div data-share aria-hidden="true"></div>
-  <script src="shares.js?v=4"></script>
+  <script src="shares.js?v=5"></script>
   <!-- /AQ:SHARE -->
 </body>
 </html>

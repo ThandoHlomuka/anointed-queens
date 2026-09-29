@@ -11,7 +11,8 @@ const PAGES = [
   'index.html', 'shop.html', 'product.html?id=p1', 'configurator.html',
   'cart.html', 'checkout.html', 'orders.html', 'wishlist.html', 'loyalty.html',
   'login.html', 'register.html', 'account.html', 'about.html', 'journal.html',
-  'faq.html', 'contact.html', 'admin_test.html'
+  'faq.html', 'contact.html', 'custom.html', 'corporate.html', 'shipping-returns.html',
+  'admin_test.html'
 ];
 const MEMBER_PAGES = ['cart.html', 'checkout.html', 'orders.html', 'wishlist.html', 'loyalty.html', 'account.html'];
 

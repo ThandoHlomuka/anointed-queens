@@ -24,8 +24,8 @@ window.AQ = (function () {
   } catch (e) {}
   return {
     NAME: 'Anointed Queens',
-    TAGLINE: 'Handcrafted custom bags, crowned in craft.',
-    VERSION: '1.3.0',
+    TAGLINE: 'Crowned in craft. Carried with purpose.',
+    VERSION: '1.4.0',
     THEME: { gold: '#D4AF37', goldBright: '#FFD700', black: '#0A0A0A' },
     CURRENCY: 'ZAR',
     LOCALE: 'en-ZA',
@@ -37,7 +37,25 @@ window.AQ = (function () {
     LOYALTY: { perSpend: 0.1, perReview: 50, perReferral: 100, redeemRate: 0.05 },
     FREE_SHIPPING_OVER: 1500,
     SHIPPING: { courier: 120, express: 260 },
-    DEMO_CARD: '4242424242424242'
+    DEMO_CARD: '4242424242424242',
+    /* Central place to update all public contact + business details
+       used by contact.html, footer and info pages. */
+    CONTACT: {
+      phoneDisplay: '065 000 0000',
+      phoneIntl: '+27650000000',
+      whatsapp: '27650000000',
+      email: 'hello@anointedqueens.co.za',
+      location: 'Sandton, Johannesburg, South Africa',
+      area: 'Sandton (by appointment)',
+      hours: 'Mon-Fri 08:00-17:00, Sat 09:00-13:00',
+      pickupArea: 'Sandton',
+      pickupNote: 'Pickup is by appointment, from our Sandton atelier.',
+      social: {
+        instagram: 'https://instagram.com/anointedqueens',
+        facebook: 'https://facebook.com/anointedqueens',
+        tiktok: 'https://tiktok.com/@anointedqueens'
+      }
+    }
   };
 })();
 window.AQ_CONFIG = window.AQ;

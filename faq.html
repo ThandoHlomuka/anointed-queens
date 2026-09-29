@@ -1,33 +1,33 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <script src="polyfill.js?v=4"></script>
+  <script src="polyfill.js?v=5"></script>
   <!-- AQ:SCRIPTS -->
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>FAQ - Anointed Queens</title>
-<meta name="description" content="Frequently asked questions about custom bags, escrow payments, shipping and the Anointed Club.">
-<script type="application/ld+json">{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[]}</script>
+<title>FAQ | Anointed Queens</title>
+<meta name="description" content="Answers to common questions about Anointed Queens - ready-to-ship and custom orders, materials, turnaround, delivery and returns.">
+<meta property="og:title" content="FAQ | Anointed Queens">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="assets/icons/favicon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700;900&family=Inter:wght@300;400;500;600;700&family=Dancing+Script:wght@600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-<link rel="stylesheet" href="style.css?v=4">
+<link rel="stylesheet" href="style.css?v=5">
 <!-- AQ:SEO -->
   <link rel="canonical" href="https://anointed-queens.vercel.app/faq.html">
-  <meta name="description" content="Orders, bespoke process, escrow protection, shipping and returns - everything about Anointed Queens in one place.">
+  <meta name="description" content="Anointed Queens FAQ - ready-to-ship and custom orders, materials, turnaround times, delivery and returns. Secured by a 50% deposit with balance on completion.">
   <meta name="theme-color" content="#0A0A0A">
   <meta property="og:type" content="website">
   <meta property="og:site_name" content="Anointed Queens">
-  <meta property="og:title" content="FAQs | Anointed Queens">
-  <meta property="og:description" content="Orders, bespoke process, escrow protection, shipping and returns - everything about Anointed Queens in one place.">
+  <meta property="og:title" content="FAQ | Anointed Queens">
+  <meta property="og:description" content="Anointed Queens FAQ - ready-to-ship and custom orders, materials, turnaround times, delivery and returns. Secured by a 50% deposit with balance on completion.">
   <meta property="og:url" content="https://anointed-queens.vercel.app/faq.html">
   <meta property="og:image" content="https://anointed-queens.vercel.app/assets/icons/icon-512-maskable.png">
   <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="FAQs | Anointed Queens">
-  <meta name="twitter:description" content="Orders, bespoke process, escrow protection, shipping and returns - everything about Anointed Queens in one place.">
+  <meta name="twitter:title" content="FAQ | Anointed Queens">
+  <meta name="twitter:description" content="Anointed Queens FAQ - ready-to-ship and custom orders, materials, turnaround times, delivery and returns.">
   <meta name="twitter:image" content="https://anointed-queens.vercel.app/assets/icons/icon-512-maskable.png">
   <!-- /AQ:SEO -->
 </head>
@@ -37,17 +37,18 @@
   <div class="wrap" style="max-width:860px">
     <span class="eyebrow">FAQ</span>
     <h1>Questions, answered</h1>
+    <p class="muted" style="margin-bottom:20px;font-size:.97rem">Still curious after this? <a class="gold" href="contact.html">Send us a message</a> or <a class="gold" href="shipping-returns.html">read about delivery &amp; returns</a>.</p>
     <div id="faqList"></div>
   </div>
 </section>
 <div id="footerSite"></div>
 <div id="toastWrap"></div>
-<script src="config.js?v=4"></script>
+<script src="config.js?v=5"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
-<script src="auth.js?v=4"></script>
-<script src="db.js?v=4"></script>
-<script src="cart.js?v=4"></script>
-<script src="script.js?v=4"></script>
+<script src="auth.js?v=5"></script>
+<script src="db.js?v=5"></script>
+<script src="cart.js?v=5"></script>
+<script src="script.js?v=5"></script>
 <script>window.BODY_ACTIVE = 'FAQ'; if (window.AQDB && window.AQDB.init) window.AQDB.init();
 AQDB.getFaqs().then(function (faqs) {
   document.getElementById('faqList').innerHTML = '<div class="grid-mini" style="gap:16px">' + faqs.map(function (f, i) {
@@ -56,10 +57,10 @@ AQDB.getFaqs().then(function (faqs) {
   }).join('') + '</div>';
 });
 </script>
-<script src="pwa.js?v=4"></script>
+<script src="pwa.js?v=5"></script>
 <!-- AQ:SHARE -->
   <div data-share aria-hidden="true"></div>
-  <script src="shares.js?v=4"></script>
+  <script src="shares.js?v=5"></script>
   <!-- /AQ:SHARE -->
 </body>
 </html>
