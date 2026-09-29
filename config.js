@@ -25,7 +25,7 @@ window.AQ = (function () {
   return {
     NAME: 'Anointed Queens',
     TAGLINE: 'Crowned in craft. Carried with purpose.',
-    VERSION: '1.4.0',
+    VERSION: '1.4.1',
     THEME: { gold: '#D4AF37', goldBright: '#FFD700', black: '#0A0A0A' },
     CURRENCY: 'ZAR',
     LOCALE: 'en-ZA',
