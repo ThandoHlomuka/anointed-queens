@@ -60,6 +60,65 @@ window.WISH = (function () {
 /* ---------- Account ---------- */
 window.ACCOUNT = (function () {
   var DB = window.AQDB, AQ = window.AQ;
+
+  function addressRow(a) {
+    return '<div class="row" style="gap:10px;padding:9px 0;border-bottom:1px solid var(--gold-15);flex-wrap:wrap;align-items:start">' +
+      '<div style="flex:1;min-width:200px"><b>' + window.esc(a.label || 'Address') + '</b>' + (a.is_default ? ' <span class="badge gold">Default</span>' : '') +
+      '<div class="muted" style="font-size:.86rem">' + window.esc(a.line1) + '<br>' + window.esc(a.city) + (a.province ? ', ' + window.esc(a.province) : '') + (a.postal ? ' ' + window.esc(a.postal) : '') + '<br>' + window.esc(a.country || 'South Africa') + '</div></div>' +
+      '<div class="row" style="gap:6px"><button class="btn btn-ghost btn-sm" data-addr-default="' + window.esc(a.id) + '"' + (a.is_default ? ' disabled' : '') + '>Make default</button>' +
+      '<button class="btn btn-danger btn-sm" data-addr-del="' + window.esc(a.id) + '">Del</button></div></div>';
+  }
+
+  function renderAddresses() {
+    var wrap = document.getElementById('addrWrap');
+    if (!wrap) return;
+    DB.addressList().then(function (list) {
+      wrap.innerHTML = (list.length ? list.map(addressRow).join('') : '<p class="muted">No saved addresses yet.</p>') +
+        '<div class="panel" style="margin-top:12px"><h4>Add an address</h4>' +
+        '<div class="row"><input class="input" id="ad_label" style="max-width:150px" placeholder="Label (Home)" value="Home">' +
+        '<input class="input" id="ad_line1" style="flex:1;min-width:180px" placeholder="Street address"></div>' +
+        '<div class="row" style="margin-top:8px"><input class="input" id="ad_city" style="max-width:150px" placeholder="City">' +
+        '<input class="input" id="ad_province" style="max-width:130px" placeholder="Province">' +
+        '<input class="input" id="ad_postal" style="max-width:110px" placeholder="Postal code"></div>' +
+        '<div class="row" style="margin-top:8px;align-items:center"><input type="checkbox" id="ad_default" style="width:auto"><label for="ad_default" style="margin:0">Set as default</label>' +
+        '<button class="btn btn-primary btn-sm" id="ad_add">Add address</button></div></div>';
+
+      wrap.querySelectorAll('[data-addr-del]').forEach(function (b) {
+        b.addEventListener('click', async function () {
+          if (!confirm('Delete this address?')) return;
+          var res = await DB.addressDelete(b.getAttribute('data-addr-del'));
+          if (res && res.error) { window.toast(res.error, 'err'); return; }
+          window.toast('Address deleted', 'green'); renderAddresses();
+        });
+      });
+      wrap.querySelectorAll('[data-addr-default]').forEach(function (b) {
+        b.addEventListener('click', async function () {
+          var list2 = await DB.addressList();
+          var cur = list2.find(function (x) { return String(x.id) === b.getAttribute('data-addr-default'); });
+          if (!cur) return;
+          var res = await DB.addressSave(Object.assign({}, cur, { is_default: true }));
+          if (res && res.error) { window.toast(res.error, 'err'); return; }
+          window.toast('Default address updated', 'green'); renderAddresses();
+        });
+      });
+      var add = document.getElementById('ad_add');
+      if (add) add.addEventListener('click', async function () {
+        var line1 = document.getElementById('ad_line1').value.trim();
+        var city = document.getElementById('ad_city').value.trim();
+        if (!line1 || !city) { window.toast('Street address and city are required', 'err'); return; }
+        var res = await DB.addressSave({
+          label: document.getElementById('ad_label').value.trim() || 'Home',
+          line1: line1, city: city,
+          province: document.getElementById('ad_province').value.trim(),
+          postal: document.getElementById('ad_postal').value.trim(),
+          is_default: document.getElementById('ad_default').checked
+        });
+        if (res && res.error) { window.toast(res.error, 'err'); return; }
+        window.toast('Address saved', 'green'); renderAddresses();
+      });
+    });
+  }
+
   function render() {
     if (!window.AQAuth.ensureClientOnly()) return;
     var u = window.AQAuth.currentUser();
@@ -74,13 +133,16 @@ window.ACCOUNT = (function () {
         '<div class="field"><label>Phone</label><input class="input" id="aPhone" value="' + window.esc(u.phone || '') + '"></div>' +
         '<div class="row"><button class="btn btn-primary" id="saveAcc"><i class="fas fa-floppy-disk"></i> Save</button>' +
         '<button class="btn btn-ghost" id="signOut"><i class="fas fa-arrow-right-from-bracket"></i> Sign out</button></div>' +
-      '</div></div>';
+      '</div>' +
+      '<div class="panel" style="max-width:560px"><h3>Saved addresses</h3><div id="addrWrap"></div></div>' +
+      '</div>';
     document.getElementById('saveAcc').addEventListener('click', async function () {
       await window.AQAuth.updateProfile({ name: document.getElementById('aName').value.trim(), phone: document.getElementById('aPhone').value.trim() });
       window.toast('Profile saved', 'green'); render();
     });
     document.getElementById('signOut').addEventListener('click', function () { window.AQAuth.signOut().then(function () { location.href = 'index.html'; }); });
+    renderAddresses();
   }
   document.addEventListener('DOMContentLoaded', function () { if (document.getElementById('accBody')) render(); });
-  return { render: render };
+  return { render: render, renderAddresses: renderAddresses };
 })();

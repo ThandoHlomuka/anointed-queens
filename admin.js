@@ -121,9 +121,11 @@ window.ADMIN = (function () {
             '<td class="stars" style="font-size:.8rem">' + '<i class="fas fa-star"></i>'.repeat(x.rating || 5) + '<i class="fas fa-star empty"></i>'.repeat(5 - (x.rating || 5)) + '</td>' +
             '<td style="max-width:220px"><b>' + window.esc(x.title) + '</b><div class="muted" style="font-size:.8rem">' + window.esc(x.body) + '</div></td>' +
             '<td><span class="badge ' + (x.status === 'approved' ? 'green' : 'grey') + '">' + x.status + '</span></td>' +
-            '<td><button class="btn btn-sm ' + (x.status === 'approved' ? 'btn-danger' : 'btn-success') + '" data-rv="' + x.id + '" data-s="' + (x.status === 'approved' ? 'hidden' : 'approved') + '">' + (x.status === 'approved' ? 'Hide' : 'Approve') + '</button></td></tr>';
+            '<td><div class="row" style="gap:6px"><button class="btn btn-sm ' + (x.status === 'approved' ? 'btn-danger' : 'btn-success') + '" data-rv="' + x.id + '" data-s="' + (x.status === 'approved' ? 'hidden' : 'approved') + '">' + (x.status === 'approved' ? 'Hide' : 'Approve') + '</button>' +
+            '<button class="btn btn-danger btn-sm" data-rvd="' + x.id + '">Del</button></div></td></tr>';
         }).join('') : '<tr><td colspan="6" class="muted">No reviews yet.</td></tr>') + '</tbody></table></div>';
       el.querySelectorAll('[data-rv]').forEach(function (b) { b.addEventListener('click', async function () { await DB.setReviewStatus(b.getAttribute('data-rv'), b.getAttribute('data-s')); adminRenders.reviews(); }); });
+      el.querySelectorAll('[data-rvd]').forEach(function (b) { b.addEventListener('click', async function () { if (!confirm('Permanently delete this review?')) return; var res = await DB.removeReview(b.getAttribute('data-rvd')); if (res && res.error) { window.toast(res.error, 'err'); return; } window.toast('Review deleted', 'green'); adminRenders.reviews(); }); });
     },
 
     customers: async function () {
@@ -131,28 +133,30 @@ window.ADMIN = (function () {
       var el = document.getElementById('mainBody');
       el.innerHTML = '<div class="table-wrap"><table><thead><tr><th>Customer</th><th>Email</th><th>Role</th><th>Points</th><th>Joined</th></tr></thead><tbody>' +
         (customers.length ? customers.map(function (c) {
+          var id = window.esc(c.id);
           return '<tr><td><b>' + window.esc(c.name || c.full_name || '—') + '</b></td><td>' + window.esc(c.email) + '</td>' +
-            '<td><span class="badge ' + (c.role === 'admin' ? 'gold' : 'grey') + '">' + (c.role || 'client') + '</span></td>' +
-            '<td>' + (c.loyalty_points || 0) + '</td><td>' + new Date(c.created_at).toLocaleDateString() + '</td></tr>';
+            '<td><select class="select" data-role-id="' + id + '" style="padding:5px 8px;min-width:104px">' +
+              ['client', 'admin'].map(function (r) { return '<option value="' + r + '"' + ((c.role || 'client') === r ? ' selected' : '') + '>' + r + '</option>'; }).join('') +
+            '</select></td>' +
+            '<td><input class="input" style="width:90px;padding:5px 8px" type="number" min="0" data-pts-id="' + id + '" value="' + (c.loyalty_points || 0) + '">' +
+            '<button class="btn btn-ghost btn-sm" data-pts-save="' + id + '">Save</button></td>' +
+            '<td>' + new Date(c.created_at).toLocaleDateString() + '</td></tr>';
         }).join('') : '<tr><td colspan="5" class="muted">No customers yet.</td></tr>') + '</tbody></table></div>';
-      el.innerHTML += '<div class="panel" style="margin-top:14px"><h3>Add an admin</h3><div class="row"><input class="input" id="admEmail" style="max-width:280px" placeholder="admin@email.com">' +
-        '<button class="btn btn-primary" id="makeAdmin">Make admin</button></div><p class="muted" style="font-size:.8rem">Enter the email of a registered user.</p></div>';
-      var mk = document.getElementById('makeAdmin');
-      if (mk) mk.addEventListener('click', async function () {
-        var email = document.getElementById('admEmail').value.trim();
-        if (!email) return;
-        var users = await DB.adminCustomers();
-        var u = users.find(function (x) { return String(x.email).toLowerCase() === email.toLowerCase(); });
-        if (!u) { window.toast('User not found', 'err'); return; }
-        await window.AQAuth.updateProfile; // noop guard
-        if (window.AQAuth.demo) {
-          var res = await (localStorage.setItem('aq_promote', email));
-        }
-        window.toast('Admin flag set for ' + email + ' (demo: role is checked at login)', 'green');
-        adminRenders.customers();
-        DB.adminCustomers().then(function (l) {
-          var t = l.find(function (x) { return String(x.email).toLowerCase() === email.toLowerCase(); });
-          if (t) t.role = 'admin';
+
+      el.querySelectorAll('[data-role-id]').forEach(function (s) {
+        s.addEventListener('change', async function () {
+          var res = await DB.adminSetRole(s.getAttribute('data-role-id'), s.value);
+          if (res && res.error) { window.toast(res.error, 'err'); adminRenders.customers(); return; }
+          window.toast('Role updated to ' + s.value, 'green');
+        });
+      });
+      el.querySelectorAll('[data-pts-save]').forEach(function (b) {
+        b.addEventListener('click', async function () {
+          var id = b.getAttribute('data-pts-save');
+          var input = el.querySelector('[data-pts-id="' + id + '"]');
+          var res = await DB.adminSetPoints(id, input.value);
+          if (res && res.error) { window.toast(res.error, 'err'); return; }
+          window.toast('Loyalty points saved', 'green');
         });
       });
     },
@@ -208,18 +212,46 @@ window.ADMIN = (function () {
       var el = document.getElementById('mainBody');
       el.innerHTML =
         '<div class="panel"><h3>Gallery</h3>' + d.gallery.map(function (g) {
-          return '<div class="row" style="gap:10px;padding:8px 0;border-bottom:1px solid var(--gold-15);flex-wrap:wrap">' +
-            '<span class="swatch" style="width:34px;height:34px;background:' + (g.swatch || '#1C1C22') + '"></span>' +
-            '<input class="input" style="flex:1;min-width:200px" id="gal_' + g.id + '" value="' + window.esc(g.caption) + '">' +
-            '<button class="btn btn-ghost btn-sm" data-gal="' + g.id + '">Save</button></div>';
-        }).join('') + '</div>' +
+           return '<div class="row" style="gap:10px;padding:8px 0;border-bottom:1px solid var(--gold-15);flex-wrap:wrap">' +
+             '<span class="swatch" style="width:34px;height:34px;background:' + (g.swatch || '#1C1C22') + '"></span>' +
+             '<input class="input" style="flex:1;min-width:200px" id="gal_' + g.id + '" value="' + window.esc(g.caption) + '">' +
+             '<input class="input" style="max-width:100px" id="gal_sort_' + g.id + '" type="number" value="' + (g.sort || 0) + '">' +
+             '<button class="btn btn-ghost btn-sm" data-gal="' + g.id + '">Save</button>' +
+             '<button class="btn btn-danger btn-sm" data-gald="' + g.id + '">Del</button></div>';
+         }).join('') +
+         '<div class="row" style="gap:8px;margin-top:10px"><input class="input" id="gal_new" placeholder="New caption" style="flex:1"><button class="btn btn-primary btn-sm" id="gal_add">Add</button></div>' + '</div>' +
         '<div class="panel"><h3>Journal</h3>' + d.journal.map(function (p) {
-          return '<div class="row" style="gap:10px;padding:8px 0;border-bottom:1px solid var(--gold-15);flex-wrap:wrap"><b style="min-width:150px">' + window.esc(p.title) + '</b>' +
-            '<input class="input" style="flex:1" id="jo_' + p.id + '" value="' + window.esc(p.excerpt) + '">' +
-            '<button class="btn btn-ghost btn-sm" data-jo="' + p.id + '">Save</button></div>';
-        }).join('') + '</div>';
-      el.querySelectorAll('[data-gal]').forEach(function (b) { b.addEventListener('click', async function () { await DB.saveGallery({ id: b.getAttribute('data-gal'), caption: document.getElementById('gal_' + b.getAttribute('data-gal')).value }); window.toast('Gallery saved', 'green'); }); });
-      el.querySelectorAll('[data-jo]').forEach(function (b) { b.addEventListener('click', async function () { window.toast('Journal excerpts are seeded in demo mode', 'gold'); }); });
+          return '<div class="row" style="gap:10px;padding:8px 0;border-bottom:1px solid var(--gold-15);flex-wrap:wrap;align-items:start">' +
+            '<div style="flex:1;min-width:240px;display:flex;flex-direction:column;gap:6px">' +
+            '<input class="input" id="jo_t_' + p.id + '" value="' + window.esc(p.title) + '">' +
+            '<input class="input" id="jo_ex_' + p.id + '" value="' + window.esc(p.excerpt || '') + '">' +
+            '<textarea class="textarea" id="jo_b_' + p.id + '" style="min-height:70px">' + window.esc(p.body || '') + '</textarea>' +
+            '<input class="input" id="jo_pub_' + p.id + '" value="' + window.esc(p.published || '') + '">' +
+            '</div>' +
+            '<div class="row" style="align-self:flex-start"><button class="btn btn-ghost btn-sm" data-jo="' + p.id + '">Save</button>' +
+            '<button class="btn btn-danger btn-sm" data-jod="' + p.id + '">Del</button></div></div>';
+        }).join('') +
+        '<div class="panel" style="margin-top:10px"><h4>New post</h4><input class="input" id="jo_new_t" placeholder="Title"><input class="input" id="jo_new_e" placeholder="Excerpt"><textarea class="textarea" id="jo_new_b" placeholder="Body" style="min-height:90px"></textarea><button class="btn btn-primary btn-sm" id="jo_add" style="margin-top:8px">Add post</button></div></div>' +
+        '<div class="panel"><h3>FAQs</h3>' + (d.faqs || []).map(function (f) {
+          return '<div class="panel" style="margin-bottom:10px"><div class="row" style="gap:10px;align-items:flex-start;flex-wrap:wrap">' +
+            '<div style="flex:1;min-width:240px;display:flex;flex-direction:column;gap:6px">' +
+            '<input class="input" data-faq-q="' + f.id + '" value="' + window.esc(f.q || '') + '" placeholder="Question">' +
+            '<textarea class="textarea" data-faq-a="' + f.id + '" style="min-height:60px" placeholder="Answer">' + window.esc(f.a || '') + '</textarea>' +
+            '<input class="input" style="max-width:110px" type="number" data-faq-s="' + f.id + '" value="' + (f.sort || 0) + '">' +
+            '</div>' +
+            '<div class="row"><button class="btn btn-ghost btn-sm" data-faq="' + f.id + '">Save</button>' +
+            '<button class="btn btn-danger btn-sm" data-faqd="' + f.id + '">Del</button></div></div></div>';
+        }).join('') +
+        '<div class="panel"><h4>New FAQ</h4><input class="input" id="faq_nq" placeholder="Question"><textarea class="textarea" id="faq_na" placeholder="Answer" style="min-height:70px"></textarea><button class="btn btn-primary btn-sm" id="faq_add" style="margin-top:8px">Add FAQ</button></div></div>' +
+      el.querySelectorAll('[data-gal]').forEach(function (b) { b.addEventListener('click', async function () { await DB.saveGallery({ id: b.getAttribute('data-gal'), caption: document.getElementById('gal_' + b.getAttribute('data-gal')).value, sort: +document.getElementById('gal_sort_' + b.getAttribute('data-gal')).value || 0 }); window.toast('Gallery saved', 'green'); adminRenders.content(); }); });
+      el.querySelectorAll('[data-gald]').forEach(function (b) { b.addEventListener('click', async function () { if (!confirm('Delete this gallery image?')) return; var res = await DB.removeGallery(b.getAttribute('data-gald')); if (res && res.error) { window.toast(res.error, 'err'); return; } window.toast('Deleted', 'green'); adminRenders.content(); }); });
+      var gadd = document.getElementById('gal_add'); if (gadd) gadd.addEventListener('click', async function () { var c = document.getElementById('gal_new').value.trim(); if (!c) return; await DB.saveGallery({ caption: c, sort: 99 }); document.getElementById('gal_new').value=''; adminRenders.content(); });
+      el.querySelectorAll('[data-jo]').forEach(function (b) { b.addEventListener('click', async function () { await DB.saveJournal({ id: b.getAttribute('data-jo'), title: document.getElementById('jo_t_'+b.getAttribute('data-jo')).value, excerpt: document.getElementById('jo_ex_'+b.getAttribute('data-jo')).value, body: document.getElementById('jo_b_'+b.getAttribute('data-jo')).value, published: document.getElementById('jo_pub_'+b.getAttribute('data-jo')).value }); window.toast('Journal saved','green'); }); });
+      el.querySelectorAll('[data-jod]').forEach(function (b) { b.addEventListener('click', async function () { if (!confirm('Delete this post?')) return; var res = await DB.removeJournal(b.getAttribute('data-jod')); if (res && res.error) { window.toast(res.error, 'err'); return; } window.toast('Deleted', 'green'); adminRenders.content(); }); });
+      var jadd = document.getElementById('jo_add'); if (jadd) jadd.addEventListener('click', async function () { var t=document.getElementById('jo_new_t').value.trim(), e=document.getElementById('jo_new_e').value.trim(), b=document.getElementById('jo_new_b').value.trim(); if (!t) return; await DB.saveJournal({ title:t, excerpt:e, body:b, author:'Anointed Queens', slug:window.AQDB.slugify(t), published:new Date().toISOString().slice(0,10) }); ['jo_new_t','jo_new_e','jo_new_b'].forEach(x=>{var el=document.getElementById(x); if (el) el.value='';}); adminRenders.content(); });
+      el.querySelectorAll('[data-faq]').forEach(function (b) { b.addEventListener('click', async function () { var id = b.getAttribute('data-faq'); var res = await DB.saveFaq({ id: id, q: el.querySelector('[data-faq-q="' + id + '"]').value.trim(), a: el.querySelector('[data-faq-a="' + id + '"]').value.trim(), sort: +el.querySelector('[data-faq-s="' + id + '"]').value || 0 }); if (res && res.error) { window.toast(res.error, 'err'); return; } window.toast('FAQ saved', 'green'); adminRenders.content(); }); });
+      el.querySelectorAll('[data-faqd]').forEach(function (b) { b.addEventListener('click', async function () { if (!confirm('Delete this FAQ?')) return; var res = await DB.removeFaq(b.getAttribute('data-faqd')); if (res && res.error) { window.toast(res.error, 'err'); return; } window.toast('Deleted', 'green'); adminRenders.content(); }); });
+      var fadd = document.getElementById('faq_add'); if (fadd) fadd.addEventListener('click', async function () { var q = document.getElementById('faq_nq').value.trim(), a = document.getElementById('faq_na').value.trim(); if (!q || !a) { window.toast('Add a question and answer', 'err'); return; } var res = await DB.saveFaq({ q: q, a: a, sort: 99 }); if (res && res.error) { window.toast(res.error, 'err'); return; } document.getElementById('faq_nq').value=''; document.getElementById('faq_na').value=''; adminRenders.content(); });
     },
 
     inbox: async function () {
@@ -228,8 +260,11 @@ window.ADMIN = (function () {
       el.innerHTML = '<div class="panel">' + (msgs.length ? msgs.map(function (m) {
         return '<div class="row" style="justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--gold-15);flex-wrap:wrap;align-items:start"><div><b>' + window.esc(m.name) + '</b> <span class="muted" style="font-size:.8rem">&lt;' + window.esc(m.email) + '&gt;</span>' +
           '<div class="muted" style="font-size:.88rem;margin-top:4px"><i class="fas fa-quote-left gold" style="margin-right:6px"></i>' + window.esc(m.message) + '</div></div>' +
-          '<span class="muted" style="font-size:.78rem">' + new Date(m.created_at).toLocaleString() + '</span></div>';
+          '<div class="row" style="gap:6px;align-items:center"><span class="muted" style="font-size:.78rem">' + new Date(m.created_at).toLocaleString() + '</span>' +
+          '<a class="btn btn-ghost btn-sm" href="mailto:' + window.esc(m.email) + '?subject=' + encodeURIComponent('Re: ' + (m.subject || 'your enquiry')) + '"><i class="fas fa-reply"></i> Reply</a>' +
+          '<button class="btn btn-danger btn-sm" data-msgd="' + window.esc(m.id) + '">Del</button></div></div>';
       }).join('') : '<p class="muted">No messages yet.</p>') + '</div>';
+      el.querySelectorAll('[data-msgd]').forEach(function (b) { b.addEventListener('click', async function () { if (!confirm('Delete this message?')) return; var res = await DB.removeMessage(b.getAttribute('data-msgd')); if (res && res.error) { window.toast(res.error, 'err'); return; } window.toast('Message deleted', 'green'); adminRenders.inbox(); }); });
     },
 
     settings: async function () {
@@ -360,8 +395,9 @@ window.ADMIN = (function () {
     document.querySelectorAll('.admin-nav-item').forEach(function (b) { b.addEventListener('click', function () { var s = b.getAttribute('data-sec'); if (s) go(s); }); });
     document.getElementById('aOut').addEventListener('click', function () { window.AQAuth.signOut().then(function () { location.href = 'login.html'; }); });
     go('dash');
+    window.ADMIN_READY = true;
   }
 
   document.addEventListener('DOMContentLoaded', init);
-  return { go: go };
+  return { go: go, renders: adminRenders, ready: function () { return window.ADMIN_READY === true; } };
 })();

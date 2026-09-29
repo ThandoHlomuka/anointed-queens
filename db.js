@@ -21,6 +21,20 @@ window.AQDB = (function () {
   function from(arr, id) { return arr.find(function (x) { return String(x.id) === String(id); }); }
   function slugify(s) { return String(s).toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, ''); }
 
+  /* Supabase upsert that never sends a client id into a uuid column.
+     Inserts omit id so the column default (gen_random_uuid()) applies;
+     updates go through update().eq('id', id). */
+  function sbUpsert(table, obj) {
+    if (obj.id) {
+      var id = obj.id, row = Object.assign({}, obj);
+      delete row.id;
+      return supabase.from(table).update(row).eq('id', id).select().single()
+        .then(function (r) { return { error: r.error ? r.error.message : null }; });
+    }
+    return supabase.from(table).insert(obj).select().single()
+      .then(function (r) { return { error: r.error ? r.error.message : null }; });
+  }
+
   /* ---------- inline SVG bag art for the demo catalog ---------- */
   function bagSvg(color, hw, accent) {
     var c = color || '#1C1C22', h = hw || '#D4AF37';
@@ -174,7 +188,7 @@ window.AQDB = (function () {
       return Promise.resolve(Object.keys(seen));
     },
     saveProduct: function (p) {
-      if (supabase) return supabase.from('products').upsert(p.id && String(p.id).length > 3 ? p : Object.assign({}, p, { id: nid() })).then(function (r) { return { error: r.error ? r.error.message : null }; });
+      if (supabase) return sbUpsert('products', p);
       var list = ls('products'); var i = list.findIndex(function (x) { return String(x.id) === String(p.id); });
       if (i >= 0) list[i] = Object.assign({}, list[i], p); else list.unshift(Object.assign({}, p, { id: nid() }));
       ss('products', list); return Promise.resolve({ error: null });
@@ -182,6 +196,10 @@ window.AQDB = (function () {
     removeProduct: function (id) {
       if (supabase) return supabase.from('products').delete().eq('id', id).then(function (r) { return { error: r.error ? r.error.message : null }; });
       ss('products', ls('products').filter(function (x) { return String(x.id) !== String(id); })); return Promise.resolve({ error: null });
+    },
+    removeGallery: function (id) {
+      if (supabase) return supabase.from('gallery').delete().eq('id', id).then(function (r) { return { error: r.error ? r.error.message : null }; });
+      ss('gallery', ls('gallery').filter(function (x) { return String(x.id) !== String(id); })); return Promise.resolve({ error: null });
     },
     getStock: function (productId) {
       if (supabase) return supabase.from('products').select('stock').eq('id', productId).single().then(function (r) { return r.data ? Number(r.data.stock) || 0 : 0; });
@@ -200,7 +218,7 @@ window.AQDB = (function () {
       return Promise.resolve(list);
     },
     saveDesignOption: function (o) {
-      if (supabase) return supabase.from('design_options').upsert(o.id ? o : Object.assign({}, o, { id: nid() })).then(function (r) { return { error: r.error ? r.error.message : null }; });
+      if (supabase) return sbUpsert('design_options', o.id ? o : Object.assign({}, o, { active: true }));
       var list = ls('design_options'); var i = list.findIndex(function (x) { return String(x.id) === String(o.id); });
       if (i >= 0) list[i] = Object.assign({}, list[i], o); else list.push(Object.assign({}, o, { id: nid(), active: true }));
       ss('design_options', list); return Promise.resolve({ error: null });
@@ -227,7 +245,7 @@ window.AQDB = (function () {
     addReview: function (rev) {
       var u = window.AQAuth.currentUser();
       rev = Object.assign({ id: nid(), created_at: new Date().toISOString(), status: 'approved', user: u ? u.name : 'Guest' }, rev);
-      if (supabase) return supabase.from('reviews').insert(rev).then(function (r) { return { error: r.error ? r.error.message : null }; });
+      if (supabase) { var row = Object.assign({}, rev); delete row.id; return supabase.from('reviews').insert(row).then(function (r) { return { error: r.error ? r.error.message : null }; }); }
       var list = ls('reviews'); list.unshift(rev); ss('reviews', list); return Promise.resolve({ error: null });
     },
     setReviewStatus: function (id, status) {
@@ -235,6 +253,36 @@ window.AQDB = (function () {
       var list = ls('reviews'); var i = list.findIndex(function (x) { return String(x.id) === String(id); });
       if (i >= 0) { list[i].status = status; ss('reviews', list); }
       return Promise.resolve({ error: null });
+    },
+    removeReview: function (id) {
+      if (supabase) return supabase.from('reviews').delete().eq('id', id).then(function (r) { return { error: r.error ? r.error.message : null }; });
+      ss('reviews', ls('reviews').filter(function (x) { return String(x.id) !== String(id); })); return Promise.resolve({ error: null });
+    },
+
+    /* Saved delivery addresses */
+    addressList: function () {
+      var u = window.AQAuth.currentUser(); if (!u) return Promise.resolve([]);
+      if (supabase) return supabase.from('addresses').select('*').eq('user_id', u.id).order('created_at', { ascending: false }).then(function (r) { return r.data || []; });
+      return Promise.resolve(ls('addresses').filter(function (a) { return String(a.user_id) === String(u.id); }));
+    },
+    addressSave: function (a) {
+      var u = window.AQAuth.currentUser(); if (!u) return Promise.resolve({ error: 'Not signed in' });
+      if (supabase) {
+        if (a.is_default) return supabase.from('addresses').update({ is_default: false }).eq('user_id', u.id).then(function () {
+          return sbUpsert('addresses', Object.assign({}, a, { user_id: u.id }));
+        });
+        return sbUpsert('addresses', Object.assign({}, a, { user_id: u.id }));
+      }
+      var list = ls('addresses').filter(function (x) { return String(x.user_id) === String(u.id); });
+      if (a.is_default) list = list.map(function (x) { x.is_default = false; return x; });
+      var i = list.findIndex(function (x) { return String(x.id) === String(a.id); });
+      if (i >= 0) list[i] = Object.assign({}, list[i], a); else list.push(Object.assign({}, a, { id: nid(), user_id: u.id, created_at: new Date().toISOString() }));
+      ss('addresses', list); return Promise.resolve({ error: null });
+    },
+    addressDelete: function (id) {
+      var u = window.AQAuth.currentUser(); if (!u) return Promise.resolve({ error: 'Not signed in' });
+      if (supabase) return supabase.from('addresses').delete().eq('id', id).eq('user_id', u.id).then(function (r) { return { error: r.error ? r.error.message : null }; });
+      ss('addresses', ls('addresses').filter(function (x) { return String(x.id) !== String(id); })); return Promise.resolve({ error: null });
     },
 
     /* Wishlist */
@@ -351,17 +399,67 @@ window.AQDB = (function () {
       if (supabase) return supabase.from('profiles').select('*').order('created_at', { ascending: false }).then(function (r) { return r.data || []; });
       try { return Promise.resolve(JSON.parse(localStorage.getItem('aq_demo_users')) || []); } catch (e) { return Promise.resolve([]); }
     },
+    adminSetRole: function (id, role) {
+      if (supabase) return supabase.from('profiles').update({ role: role }).eq('id', id).then(function (r) { return { error: r.error ? r.error.message : null }; });
+      var users = ls('demo_users');
+      var i = users.findIndex(function (x) { return String(x.id) === String(id); });
+      if (i < 0) return Promise.resolve({ error: 'User not found' });
+      users[i] = Object.assign({}, users[i], { role: role }); ss('demo_users', users);
+      var sess = JSON.parse(localStorage.getItem('aq_session') || 'null');
+      if (sess && String(sess.id) === String(id)) localStorage.setItem('aq_session', JSON.stringify(Object.assign({}, sess, { role: role })));
+      return Promise.resolve({ error: null });
+    },
+    adminSetPoints: function (id, pts) {
+      var n = Math.max(0, Math.round(Number(pts) || 0));
+      if (supabase) return supabase.from('profiles').update({ loyalty_points: n }).eq('id', id).then(function (r) { return { error: r.error ? r.error.message : null }; });
+      var users = ls('demo_users');
+      var i = users.findIndex(function (x) { return String(x.id) === String(id); });
+      if (i < 0) return Promise.resolve({ error: 'User not found' });
+      users[i] = Object.assign({}, users[i], { loyalty_points: n }); ss('demo_users', users);
+      var sess = JSON.parse(localStorage.getItem('aq_session') || 'null');
+      if (sess && String(sess.id) === String(id)) localStorage.setItem('aq_session', JSON.stringify(Object.assign({}, sess, { loyalty_points: n })));
+      return Promise.resolve({ error: null });
+    },
 
     /* Gallery / journal / faqs / settings / contact */
-    getGallery: function () { return supabase ? supabase.from('gallery').select('*').order('sort').then(function (r) { return r.data || []; }) : Promise.resolve(ls('gallery')); },
+    getGallery: function () {
+      if (supabase) return supabase.from('gallery').select('*').order('sort').then(function (r) { return r.data || []; });
+      return Promise.resolve(ls('gallery').slice().sort(function (a, b) { return (a.sort || 0) - (b.sort || 0); }));
+    },
     saveGallery: function (g) {
-      if (supabase) return supabase.from('gallery').upsert(g.id ? g : Object.assign({}, g, { id: nid() })).then(function (r) { return { error: r.error ? r.error.message : null }; });
+      if (supabase) return sbUpsert('gallery', g);
       var list = ls('gallery'); var i = list.findIndex(function (x) { return String(x.id) === String(g.id); });
       if (i >= 0) list[i] = Object.assign({}, list[i], g); else list.push(Object.assign({}, g, { id: nid() }));
       ss('gallery', list); return Promise.resolve({ error: null });
     },
-    getJournal: function () { return supabase ? supabase.from('journal').select('*').order('published', { ascending: false }).then(function (r) { return r.data || []; }) : Promise.resolve(ls('journal')); },
-    getFaqs: function () { return supabase ? supabase.from('faqs').select('*').order('sort').then(function (r) { return r.data || []; }) : Promise.resolve(ls('faqs')); },
+    getJournal: function () {
+      if (supabase) return supabase.from('journal').select('*').order('published', { ascending: false }).then(function (r) { return r.data || []; });
+      return Promise.resolve(ls('journal').slice().sort(function (a, b) { return new Date(b.published || 0) - new Date(a.published || 0); }));
+    },
+    saveJournal: function (j) {
+      if (supabase) return sbUpsert('journal', j.id ? j : Object.assign({}, j, { slug: j.slug || slugify(j.title) }));
+      var list = ls('journal'); var i = list.findIndex(function (x) { return String(x.id) === String(j.id); });
+      if (i >= 0) list[i] = Object.assign({}, list[i], j); else list.unshift(Object.assign({}, j, { id: nid(), slug: j.slug || slugify(j.title), published: j.published || new Date().toISOString().slice(0,10) }));
+      ss('journal', list); return Promise.resolve({ error: null });
+    },
+    removeJournal: function (id) {
+      if (supabase) return supabase.from('journal').delete().eq('id', id).then(function (r) { return { error: r.error ? r.error.message : null }; });
+      ss('journal', ls('journal').filter(function (x) { return String(x.id) !== String(id); })); return Promise.resolve({ error: null });
+    },
+    getFaqs: function () {
+      if (supabase) return supabase.from('faqs').select('*').order('sort').then(function (r) { return r.data || []; });
+      return Promise.resolve(ls('faqs').slice().sort(function (a, b) { return (a.sort || 0) - (b.sort || 0); }));
+    },
+    saveFaq: function (f) {
+      if (supabase) return sbUpsert('faqs', f);
+      var list = ls('faqs'); var i = list.findIndex(function (x) { return String(x.id) === String(f.id); });
+      if (i >= 0) list[i] = Object.assign({}, list[i], f); else list.push(Object.assign({}, f, { id: nid() }));
+      ss('faqs', list); return Promise.resolve({ error: null });
+    },
+    removeFaq: function (id) {
+      if (supabase) return supabase.from('faqs').delete().eq('id', id).then(function (r) { return { error: r.error ? r.error.message : null }; });
+      ss('faqs', ls('faqs').filter(function (x) { return String(x.id) !== String(id); })); return Promise.resolve({ error: null });
+    },
     getSettings: function () {
       if (supabase) return supabase.from('site_settings').select('*').then(function (r) {
         var s = {}; (r.data || []).forEach(function (row) { s[row.key] = row.value; }); return s;
@@ -373,11 +471,15 @@ window.AQDB = (function () {
       var s = Object.assign({}, ls('site_settings'), patches); ss('site_settings', s); return Promise.resolve({ error: null });
     },
     contactSend: function (msg) {
-      msg = Object.assign({ id: nid(), created_at: new Date().toISOString() }, msg);
       if (supabase) return supabase.from('contact_messages').insert(msg).then(function (r) { return { error: r.error ? r.error.message : null }; });
+      msg = Object.assign({ id: nid(), created_at: new Date().toISOString() }, msg);
       var list = ls('contact_messages'); if (!list) list = []; list.unshift(msg); ss('contact_messages', list); return Promise.resolve({ error: null });
     },
     contactList: function () { return supabase ? supabase.from('contact_messages').select('*').order('created_at', { ascending: false }).then(function (r) { return r.data || []; }) : Promise.resolve(ls('contact_messages') || []); },
+    removeMessage: function (id) {
+      if (supabase) return supabase.from('contact_messages').delete().eq('id', id).then(function (r) { return { error: r.error ? r.error.message : null }; });
+      ss('contact_messages', (ls('contact_messages') || []).filter(function (x) { return String(x.id) !== String(id); })); return Promise.resolve({ error: null });
+    },
     adminExtraAll: function () { return Promise.all([this.getGallery(), this.getJournal(), this.getFaqs(), ls('custom_requests') || []].concat(supabase ? [] : [ls('reviews')])).then(function (r) {
         return { gallery: r[0], journal: r[1], faqs: r[2], custom: r[3], reviews: r[4] || null };
       }); },
