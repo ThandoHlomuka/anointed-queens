@@ -232,6 +232,7 @@ a:hover { color: var(--gold-bright); }
 .opt-pill.active { background: var(--gold-15); border-color: var(--gold); color: var(--gold-bright); }
 .swatch { width: 20px; height: 20px; border-radius: 50%; border: 2px solid rgba(255,255,255,0.25); box-shadow: inset 0 0 0 1px rgba(0,0,0,0.2); }
 .swatch.textile { border-radius: 6px; }
+.opt-img { width: 34px; height: 34px; border-radius: 8px; background-size: cover; background-position: center; flex-shrink: 0; border: 1px solid var(--gold-30); }
 
 /* ---------- Stepper (configurator) ---------- */
 .stepper { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 22px; }
@@ -241,18 +242,33 @@ a:hover { color: var(--gold-bright); }
 .step.done .dot { background: var(--gold-15); color: var(--gold); }
 .step .line { width: 26px; height: 1px; background: var(--gold-30); }
 
-/* ---------- Bag preview ---------- */
-.bag-stage {
-  aspect-ratio: 4/4; border-radius: 18px; background:
+/* ---------- Bag preview (real photos) ---------- */
+.bag-stage { border-radius: 18px; display: flex; flex-direction: column; gap: 10px; }
+.bag-show {
+  position: relative; width: 100%; border-radius: 18px; overflow: hidden;
+  border: 1px solid var(--gold-15);
+  background:
     radial-gradient(circle at 20% 20%, rgba(212,175,55,0.18), transparent 55%),
     linear-gradient(160deg, var(--black-3), var(--black));
-  border: 1px solid var(--gold-15); display: grid; place-items: center; position: relative; overflow: hidden;
 }
-.bag-illus { width: 62%; height: 68%; position: relative; }
-.bag-body { position: absolute; inset: 0; border-radius: 14% 14% 34% 34% / 16% 16% 30% 30%; background: var(--bag-color, #1C1C22); border: 1.5px solid var(--bag-hardware, var(--gold)); box-shadow: inset 0 -14px 24px rgba(0,0,0,0.35); }
-.bag-flap { position: absolute; top: 8%; left: 4%; right: 4%; height: 52%; background: var(--bag-color, #1C1C22); filter: brightness(0.92); border-radius: 12% 12% 28% 28% / 22% 22% 40% 40%; box-shadow: 0 -3px 0 rgba(255,255,255,0.03), 0 6px 10px rgba(0,0,0,0.35); }
-.bag-strap { position: absolute; top: -16%; left: 14%; right: 14%; height: 34%; border: 4px solid var(--bag-handle, var(--gold)); border-radius: 50%; border-bottom-color: transparent; }
-.bag-lock { position: absolute; top: 30%; left: 50%; transform: translateX(-50%); width: 16%; height: 8%; background: linear-gradient(180deg, var(--bag-hardware, var(--gold-bright)), var(--gold-soft)); border-radius: 4px; }
+.bag-show-img { width: 100%; height: min(340px, 46vw); object-fit: cover; display: block; }
+.bag-show-tint {
+  position: absolute; inset: 0; pointer-events: none;
+  mix-blend-mode: color; opacity: 0.92;
+}
+.bag-show-label {
+  position: absolute; left: 12px; bottom: 12px; padding: 6px 12px; border-radius: 999px;
+  background: rgba(10,10,10,0.72); border: 1px solid var(--gold-30); color: var(--gold-bright);
+  font-size: 0.8rem; letter-spacing: 0.06em; text-transform: uppercase;
+}
+.parts-rail { display: flex; gap: 10px; }
+.part-chip {
+  flex: 1; min-width: 0; border-radius: 14px; border: 1px solid var(--gold-15);
+  background: var(--black-2); overflow: hidden;
+}
+.part-chip .part-chip-img { height: 96px; background-size: cover; background-position: center; }
+.part-chip-role { display: block; font-size: 0.68rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--gold); opacity: 0.8; padding: 8px 10px 0; }
+.part-chip-label { display: block; font-size: 0.78rem; color: var(--text-on-dark); padding: 2px 10px 10px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
 /* ---------- Steps / process ---------- */
 .num-step { display: flex; gap: 18px; align-items: flex-start; }
@@ -364,7 +380,7 @@ tr:hover td { background: var(--gold-15); }
 /* ---------- Light (customer-facing light pages) ---------- */
 body.light .nav { background: rgba(255, 253, 246, 0.9); border-bottom: 1px solid var(--gold-30); }
 body.light .card, body.light .review-card, body.light .panel { background: white; }
-body.light .product-card .thumb, body.light .bag-stage { background: var(--cream); }
+body.light .product-card .thumb { background: var(--cream); }
 body.light .input, body.light .textarea, body.light .select { background: var(--ivory); color: #221F18; border-color: rgba(140,109,31,0.35); }
 body.light .search-box { background: var(--ivory); border-color: rgba(140,109,31,0.35); }
 body.light .search-box input { color: #221F18; }
@@ -468,10 +484,11 @@ body.light .modal { background: white; color: #221F18; }
 }
 
 .product-card .thumb { height: 260px; }
-.bag-stage { height: 300px; }
 @supports (aspect-ratio: 4 / 5) {
   .product-card .thumb { height: auto; }
-  .bag-stage { height: auto; }
+}
+@media (max-width: 600px) {
+  .bag-show-img { height: 300px; }
 }
 
 h1 { font-size: 2.6rem; }

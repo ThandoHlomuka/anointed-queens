@@ -12,13 +12,44 @@ window.CONFIG = (function () {
   var BASE = 1890;   // bespoke base price (R)
   var cur = 0;
 
+  /* Real photos (Pexels, free license) bundled locally in assets/designer */
+  var IMG = {
+    style: { tote: 'assets/designer/tote-c1.jpg', satchel: 'assets/designer/satchel-v1.jpg', crossbody: 'assets/designer/crossbody-c1.jpg', clutch: 'assets/designer/clutch-c2.jpg', 'mini-bag': 'assets/designer/mini-c1.jpg', weekender: 'assets/designer/weekender-c1.jpg' },
+    fabric: { 'full-grain-leather': 'assets/designer/leather-c2.jpg', 'pebble-leather': 'assets/designer/leather-c1.jpg', suede: 'assets/designer/suede-c1.jpg', 'vegan-pebble': 'assets/designer/leather-c1.jpg', boucle: 'assets/designer/boucle-c1.jpg' },
+    handle: { 'leather-top': 'assets/designer/strap-c1.jpg', chain: 'assets/designer/chain-c1.jpg', wooden: 'assets/designer/wooden-c1.jpg', 'long-strap': 'assets/designer/longstrap-c1.jpg', crossover: 'assets/designer/crossover-c1.jpg' },
+    hardware: { 'antique-gold': 'assets/designer/harness-c1.jpg', 'polished-gold': 'assets/designer/harness-c1.jpg', silver: 'assets/designer/harness-c1.jpg', gunmetal: 'assets/designer/harness-c1.jpg', 'black-matte': 'assets/designer/harness-c1.jpg' },
+    lining: { cotton: 'assets/designer/cotton-c1.jpg', monogrammed: 'assets/designer/cotton-c1.jpg', 'suede-lining': 'assets/designer/suede-c1.jpg' }
+  };
+
   function pickHTML(group, opts) {
     return opts.map(function (o) {
+      var img = (IMG[group] || {})[o.value];
       var sw = o.swatch ? '<span class="swatch" style="background:' + o.swatch + '"></span>' : '';
+      var th = img ? '<span class="opt-img" style="background-image:url(' + img + ')"></span>' : '';
       var delta = o.price_delta ? '<span class="muted" style="font-size:.76rem">' + (o.price_delta > 0 ? '+' + window.fmtMoney(o.price_delta) : '-' + window.fmtMoney(-o.price_delta)) + '</span>' : '';
       var active = sel[group] === o.value;
-      return '<button type="button" class="opt-pill' + (active ? ' active' : '') + '" data-value="' + o.value + '">' + sw + window.esc(o.label) + delta + '</button>';
+      return '<button type="button" class="opt-pill' + (active ? ' active' : '') + '" data-value="' + o.value + '">' + (th || sw) + window.esc(o.label) + delta + '</button>';
     }).join('');
+  }
+
+  function partHTML(img, role, label) {
+    return '<div class="part-chip"><div class="part-chip-img" style="background-image:url(' + img + ')" role="img" aria-label="' + window.esc(label) + '"></div><span class="part-chip-role">' + role + '</span><span class="part-chip-label">' + window.esc(label) + '</span></div>';
+  }
+
+  function stageMarkup(all) {
+    var pick = function (g) { return all.find(function (x) { return x.group === g && x.value === sel[g]; }); };
+    var col = pick('colour'), hw = pick('hardware'), style = pick('style'), fabric = pick('fabric'), handle = pick('handle');
+    var colSw = (col && col.swatch) || '#2A2118';
+    return '<div class="bag-show">' +
+        '<img class="bag-show-img" src="' + (IMG.style[sel.style] || IMG.style.tote) + '" alt="' + window.esc((style && style.label) || 'Bespoke bag') + '" loading="lazy">' +
+        '<div class="bag-show-tint" style="background:' + colSw + '"></div>' +
+        '<span class="bag-show-label">' + (sel.style ? window.esc(style ? style.label : 'Bespoke') : 'Bespoke') + '</span>' +
+      '</div>' +
+      '<div class="parts-rail">' +
+        partHTML(IMG.fabric[sel.fabric] || IMG.fabric['full-grain-leather'], 'Material', (fabric && fabric.label) || 'Full-Grain Leather') +
+        partHTML(IMG.handle[sel.handle] || IMG.handle['leather-top'], 'Strap', (handle && handle.label) || 'Leather Top Handle') +
+        partHTML(IMG.hardware[sel.hardware] || IMG.hardware['antique-gold'], 'Hardware', (hw && hw.label) || 'Antique Gold') +
+      '</div>';
   }
 
   function renderStep() {
@@ -70,29 +101,21 @@ window.CONFIG = (function () {
     var info = document.getElementById('bagInfo');
     if (!stage) return;
     DB.getDesignOptions().then(function (all) {
-      var col = all.find(function (x) { return x.group === 'colour' && x.value === sel.colour; });
-      var hw = all.find(function (x) { return x.group === 'hardware' && x.value === sel.hardware; });
-      var style = all.find(function (x) { return x.group === 'style' && x.value === sel.style; });
-      stage.style.setProperty('--bag-color', (col && col.swatch) || '#2A2118');
-      stage.style.setProperty('--bag-hardware', (hw && hw.swatch) || '#D4AF37');
-      stage.style.setProperty('--bag-handle', (hw && hw.swatch) || '#D4AF37');
-      if (style) stage.style.transform = style.value === 'clutch' ? 'scale(.8) rotate(-6deg)' : (style.value === 'weekender' ? 'scale(.94)' : '');
+      stage.innerHTML = stageMarkup(all);
       totals().then(function (t) { if (info) info.textContent = 'Current estimate: ' + window.fmtMoney(t.total); });
     });
   }
 
-  function summaryHTML() {
-    return DB.getDesignOptions().then(function (all) {
-      var rows = STEPS.map(function (s) {
-        var o = all.find(function (x) { return x.group === s[0] && x.value === sel[s[0]]; });
-        return '<tr><td style="text-transform:uppercase;letter-spacing:.1em;color:var(--gold);font-size:.74rem">' + s[1] + '</td><td>' + window.esc(o ? o.label : '-') + (o && o.price_delta ? (' <span class="muted">' + (o.price_delta > 0 ? '+' : '-') + window.fmtMoney(Math.abs(o.price_delta)) + '</span>') : '') + '</td></tr>';
-      }).join('');
-      return totals().then(function (t) {
-        return '<div class="table-wrap"><table>' + rows +
-          '<tr><td style="font-weight:800;color:var(--gold-bright)">Estimated total</td><td style="font-weight:800">' + window.fmtMoney(t.total) + '</td></tr>' +
-          '</table></div>' +
-          '<p style="font-size:.84rem;color:var(--text-muted);margin-top:12px"><i class="fas fa-shield-halved gold"></i> Start with a ' + AQ.ESCROW_DEPOSIT_PCT + '% deposit (' + window.fmtMoney(t.total * AQ.ESCROW_DEPOSIT_PCT / 100) + ') - the balance is invoiced only once your bag is made and you approve it. Escrow protected from start to finish.</p>';
-      });
+  function summaryHTML(all) {
+    var rows = STEPS.map(function (s) {
+      var o = all.find(function (x) { return x.group === s[0] && x.value === sel[s[0]]; });
+      return '<tr><td style="text-transform:uppercase;letter-spacing:.1em;color:var(--gold);font-size:.74rem">' + s[1] + '</td><td>' + window.esc(o ? o.label : '-') + (o && o.price_delta ? (' <span class="muted">' + (o.price_delta > 0 ? '+' : '-') + window.fmtMoney(Math.abs(o.price_delta)) + '</span>') : '') + '</td></tr>';
+    }).join('');
+    return totals().then(function (t) {
+      return '<div class="table-wrap"><table>' + rows +
+        '<tr><td style="font-weight:800;color:var(--gold-bright)">Estimated total</td><td style="font-weight:800">' + window.fmtMoney(t.total) + '</td></tr>' +
+        '</table></div>' +
+        '<p style="font-size:.84rem;color:var(--text-muted);margin-top:12px"><i class="fas fa-shield-halved gold"></i> Start with a ' + AQ.ESCROW_DEPOSIT_PCT + '% deposit (' + window.fmtMoney(t.total * AQ.ESCROW_DEPOSIT_PCT / 100) + ') - the balance is invoiced only once your bag is made and you approve it. Escrow protected from start to finish.</p>';
     });
   }
 
@@ -104,23 +127,16 @@ window.CONFIG = (function () {
 
   async function finish() {
     var t = await totals();
+    var all = await DB.getDesignOptions();
     var preview = document.getElementById('previewBody');
     preview.innerHTML = '<div class="eyebrow">Your design</div><h3>' + window.esc(designName()) + '</h3>' +
-      '<div class="bag-stage" id="bagCopy" style="max-width:280px;margin:0 auto 16px"><div class="bag-illus"><div class="bag-strap"></div><div class="bag-flap"></div><div class="bag-lock"></div><div class="bag-body"></div></div></div>' +
-      (await summaryHTML()) +
+      '<div class="bag-stage" id="bagCopy" style="max-width:360px;margin:0 auto 16px">' + stageMarkup(all) + '</div>' +
+      (await summaryHTML(all)) +
       '<div class="row" style="margin-top:18px">' +
         '<button class="btn btn-primary" id="addToBagFin"><i class="fas fa-bag-shopping"></i> Add to Bag</button>' +
         '<button class="btn btn-outline" id="reqQuoteFin"><i class="fas fa-file-signature"></i> Save & Request Quote</button>' +
       '</div>' +
       '<div class="field" style="margin-top:14px"><label>Reference (optional)</label><input class="input" id="designRef" placeholder="e.g. Wedding gift, Graduation 2026"></div>';
-    ['col', 'hardware', 'handle'].forEach(function (k) {
-      DB.getDesignOptions().then(function (all) {
-        var o = all.find(function (x) { return x.group === k && x.value === sel[k]; });
-        if (o && o.swatch) {
-          document.getElementById('bagCopy').style.setProperty(k === 'col' ? '--bag-color' : k === 'hardware' ? '--bag-hardware' : '--bag-handle', o.swatch);
-        }
-      });
-    });
 
     document.getElementById('addToBagFin').addEventListener('click', async function () {
       var ref = (document.getElementById('designRef') || {}).value || '';
