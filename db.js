@@ -21,6 +21,34 @@ window.AQDB = (function () {
   function from(arr, id) { return arr.find(function (x) { return String(x.id) === String(id); }); }
   function slugify(s) { return String(s).toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, ''); }
 
+  /* design_options: the live column is group_name (group is reserved).
+     Expose it as `group` to the rest of the app. */
+  function normOption(o) {
+    if (!o || !o.group_name || o.group) return o;
+    var r = Object.assign({}, o); r.group = r.group_name; return r;
+  }
+  function denormOption(o) {
+    if (!o) return o;
+    var r = Object.assign({}, o);
+    if (r.group && !r.group_name) { r.group_name = r.group; delete r.group; }
+    return r;
+  }
+
+  /* Reviews store the display name in user_name: "user" is a reserved
+     word in Postgres and cannot be used as a column name unquoted.
+     Translated here so product.js/index.html/admin.js can keep reading
+     .user, exactly like group_name -> group for design options. */
+  function normReview(r) {
+    if (!r || !r.user_name || r.user) return r;
+    var o = Object.assign({}, r); o.user = o.user_name; return o;
+  }
+  function denormReview(r) {
+    if (!r) return r;
+    var o = Object.assign({}, r);
+    if (o.user && !o.user_name) { o.user_name = o.user; delete o.user; }
+    return o;
+  }
+
   /* Supabase upsert that never sends a client id into a uuid column.
      Inserts omit id so the column default (gen_random_uuid()) applies;
      updates go through update().eq('id', id). */
@@ -206,19 +234,21 @@ window.AQDB = (function () {
       var p = from(ls('products'), productId); return Promise.resolve(p ? Number(p.stock) || 0 : 0);
     },
 
-    /* Design options */
+    /* Design options. The live column is `group_name` (group is a
+       reserved word); the rest of the app reads/writes `group`, so we
+       translate at the data-layer boundary only. */
     getDesignOptions: function (group) {
       if (supabase) {
         var q = supabase.from('design_options').select('*').eq('active', true);
-        if (group) q = q.eq('group', group);
-        return q.order('sort').then(function (r) { return r.data || []; });
+        if (group) q = q.eq('group_name', group);
+        return q.order('sort').then(function (r) { return (r.data || []).map(normOption); });
       }
       var list = ls('design_options');
       if (group) list = list.filter(function (o) { return o.group === group; });
       return Promise.resolve(list);
     },
     saveDesignOption: function (o) {
-      if (supabase) return sbUpsert('design_options', o.id ? o : Object.assign({}, o, { active: true }));
+      if (supabase) return sbUpsert('design_options', denormOption(o.id ? o : Object.assign({}, o, { active: true })));
       var list = ls('design_options'); var i = list.findIndex(function (x) { return String(x.id) === String(o.id); });
       if (i >= 0) list[i] = Object.assign({}, list[i], o); else list.push(Object.assign({}, o, { id: nid(), active: true }));
       ss('design_options', list); return Promise.resolve({ error: null });
@@ -238,14 +268,14 @@ window.AQDB = (function () {
       if (supabase) {
         var q = supabase.from('reviews').select('*').eq('status', 'approved').order('created_at', { ascending: false });
         if (productId) q = q.eq('product_id', productId);
-        return q.then(function (r) { return r.data || []; });
+        return q.then(function (r) { return (r.data || []).map(normReview); });
       }
       return Promise.resolve(ls('reviews').filter(function (r) { return r.status === 'approved' && (!productId || r.product_id === productId); }));
     },
     addReview: function (rev) {
       var u = window.AQAuth.currentUser();
       rev = Object.assign({ id: nid(), created_at: new Date().toISOString(), status: 'approved', user: u ? u.name : 'Guest' }, rev);
-      if (supabase) { var row = Object.assign({}, rev); delete row.id; return supabase.from('reviews').insert(row).then(function (r) { return { error: r.error ? r.error.message : null }; }); }
+      if (supabase) { var row = denormReview(Object.assign({}, rev)); delete row.id; return supabase.from('reviews').insert(row).then(function (r) { return { error: r.error ? r.error.message : null }; }); }
       var list = ls('reviews'); list.unshift(rev); ss('reviews', list); return Promise.resolve({ error: null });
     },
     setReviewStatus: function (id, status) {
@@ -480,7 +510,15 @@ window.AQDB = (function () {
       if (supabase) return supabase.from('contact_messages').delete().eq('id', id).then(function (r) { return { error: r.error ? r.error.message : null }; });
       ss('contact_messages', (ls('contact_messages') || []).filter(function (x) { return String(x.id) !== String(id); })); return Promise.resolve({ error: null });
     },
-    adminExtraAll: function () { return Promise.all([this.getGallery(), this.getJournal(), this.getFaqs(), ls('custom_requests') || []].concat(supabase ? [] : [ls('reviews')])).then(function (r) {
+    /* All reviews, not just approved: the admin table moderates them.
+       Reads the live table in Supabase mode, where the old localStorage
+       path silently returned null and left the table empty. */
+    adminReviews: function () {
+      if (supabase) return supabase.from('reviews').select('*').order('created_at', { ascending: false })
+        .then(function (r) { return (r.data || []).map(normReview); });
+      return Promise.resolve(ls('reviews') || []);
+    },
+    adminExtraAll: function () { return Promise.all([this.getGallery(), this.getJournal(), this.getFaqs(), ls('custom_requests') || [], this.adminReviews()]).then(function (r) {
         return { gallery: r[0], journal: r[1], faqs: r[2], custom: r[3], reviews: r[4] || null };
       }); },
 

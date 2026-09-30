@@ -12,27 +12,12 @@
 
 create extension if not exists "pgcrypto";
 
--- ---------- helper: is a user an admin? ----------
-create or replace function public.is_admin(uid uuid)
-returns boolean language sql security invoker stable as $$
-  select exists (select 1 from public.profiles p where p.id = uid and p.role = 'admin');
-$$;
+-- NOTE: the helper functions below (is_admin, add_loyalty_points) are
+-- defined AFTER the tables, further down this file. is_admin is a
+-- LANGUAGE sql function whose body Postgres validates at CREATE time,
+-- so it cannot be created before public.profiles exists.
 
--- ---------- helper: add/consume loyalty points ----------
-create or replace function public.add_loyalty_points(uid uuid, d integer, reason_text text)
-returns integer language plpgsql security invoker as $$
-declare nb integer;
-begin
-  update public.profiles
-     set loyalty_points = coalesce(loyalty_points, 0) + d
-   where id = uid
-  returning loyalty_points into nb;
-  insert into public.loyalty_txn (user_id, delta, balance, reason)
-  values (uid, d, coalesce(nb, 0), reason_text);
-  return nb;
-end $$;
-
--- ---------- RLS helper trigger: auto-create profile on signup ----------
+-- ---------- tables ----------
 create table if not exists public.profiles (
   id uuid primary key references auth.users(id) on delete cascade,
   email text not null,
@@ -129,7 +114,7 @@ create table if not exists public.reviews (
   order_id text default '',
   product_id uuid references public.products(id) on delete set null,
   user_id uuid references auth.users(id) on delete set null,
-  user text default 'Guest',
+  user_name text default 'Guest',        -- "user" is reserved in Postgres
   rating integer not null check (rating between 1 and 5),
   title text default '',
   body text default '',
@@ -227,6 +212,44 @@ create table if not exists public.contact_messages (
 );
 
 -- ============================================================
+-- Helper functions (AFTER tables: is_admin's body is validated by
+-- Postgres at CREATE time, so public.profiles must already exist)
+-- ============================================================
+-- ---------- helper: is the CURRENT user an admin? ----------
+-- SECURITY DEFINER is required, not optional: this function is called
+-- from inside the profiles SELECT policies, so an INVOKER body would
+-- re-enter those policies and Postgres would raise
+-- "infinite recursion detected in policy for relation profiles".
+-- Definer privileges bypass RLS, which is what breaks the cycle.
+-- It takes no argument so it cannot be used to probe other users'
+-- roles, and it pins search_path so it cannot be hijacked.
+create or replace function public.is_admin()
+returns boolean language sql security definer stable set search_path = public as $$
+  select exists (
+    select 1 from public.profiles p
+     where p.id = (select auth.uid()) and p.role = 'admin'
+  );
+$$;
+
+grant execute on function public.is_admin() to anon, authenticated;
+
+-- ---------- helper: add/consume loyalty points ----------
+create or replace function public.add_loyalty_points(uid uuid, d integer, reason_text text)
+returns integer language plpgsql security invoker as $$
+declare nb integer;
+begin
+  update public.profiles
+     set loyalty_points = coalesce(loyalty_points, 0) + d
+   where id = uid
+  returning loyalty_points into nb;
+  insert into public.loyalty_txn (user_id, delta, balance, reason)
+  values (uid, d, coalesce(nb, 0), reason_text);
+  return nb;
+end $$;
+
+grant execute on function public.add_loyalty_points(uuid, integer, text) to authenticated;
+
+-- ============================================================
 -- RLS (enable on every table; policies below match access model)
 -- ============================================================
 alter table public.profiles         enable row level security;
@@ -248,133 +271,179 @@ alter table public.site_settings    enable row level security;
 alter table public.contact_messages enable row level security;
 
 -- profiles: own row read/update; admins see all
+drop policy if exists "profiles select own" on public.profiles;
 create policy "profiles select own" on public.profiles for select
   to authenticated using ((select auth.uid()) = id);
+drop policy if exists "profiles select admin" on public.profiles;
 create policy "profiles select admin" on public.profiles for select
-  to authenticated using (public.is_admin((select auth.uid())));
+  to authenticated using (public.is_admin());
+drop policy if exists "profiles update own" on public.profiles;
 create policy "profiles update own" on public.profiles for update
   to authenticated using ((select auth.uid()) = id)
   with check ((select auth.uid()) = id);
+drop policy if exists "profiles insert own" on public.profiles;
 create policy "profiles insert own" on public.profiles for insert
   to authenticated with check ((select auth.uid()) = id);
+drop policy if exists "profiles update admin" on public.profiles;
 create policy "profiles update admin" on public.profiles for update
-  to authenticated using (public.is_admin((select auth.uid())))
-  with check (public.is_admin((select auth.uid())));
+  to authenticated using (public.is_admin())
+  with check (public.is_admin());
 
 -- addresses: own
+drop policy if exists "addresses select own" on public.addresses;
 create policy "addresses select own" on public.addresses for select
   to authenticated using ((select auth.uid()) = user_id);
+drop policy if exists "addresses mutate own" on public.addresses;
 create policy "addresses mutate own" on public.addresses for all
   to authenticated using ((select auth.uid()) = user_id)
   with check ((select auth.uid()) = user_id);
 
 -- products: public read (active), admin write
+drop policy if exists "products select public" on public.products;
 create policy "products select public" on public.products for select
   to anon, authenticated using (active = true);
+drop policy if exists "products select all admin" on public.products;
 create policy "products select all admin" on public.products for select
-  to authenticated using (public.is_admin((select auth.uid())));
+  to authenticated using (public.is_admin());
+drop policy if exists "products write admin" on public.products;
 create policy "products write admin" on public.products for all
-  to authenticated using (public.is_admin((select auth.uid())))
-  with check (public.is_admin((select auth.uid())));
+  to authenticated using (public.is_admin())
+  with check (public.is_admin());
 
 -- product_options / design_options: public read, admin write
+drop policy if exists "product_options select public" on public.product_options;
 create policy "product_options select public" on public.product_options for select
   to anon, authenticated using (true);
+drop policy if exists "product_options write admin" on public.product_options;
 create policy "product_options write admin" on public.product_options for all
-  to authenticated using (public.is_admin((select auth.uid())))
-  with check (public.is_admin((select auth.uid())));
+  to authenticated using (public.is_admin())
+  with check (public.is_admin());
 
+drop policy if exists "design_options select public" on public.design_options;
 create policy "design_options select public" on public.design_options for select
   to anon, authenticated using (true);
+drop policy if exists "design_options write admin" on public.design_options;
 create policy "design_options write admin" on public.design_options for all
-  to authenticated using (public.is_admin((select auth.uid())))
-  with check (public.is_admin((select auth.uid())));
+  to authenticated using (public.is_admin())
+  with check (public.is_admin());
 
 -- orders: own select; admin all + write; insert own (client pays)
+drop policy if exists "orders select own" on public.orders;
 create policy "orders select own" on public.orders for select
   to authenticated using ((select auth.uid()) = user_id);
+drop policy if exists "orders select all admin" on public.orders;
 create policy "orders select all admin" on public.orders for select
-  to authenticated using (public.is_admin((select auth.uid())));
+  to authenticated using (public.is_admin());
+drop policy if exists "orders insert own" on public.orders;
 create policy "orders insert own" on public.orders for insert
   to authenticated with check ((select auth.uid()) = user_id);
+drop policy if exists "orders update own release" on public.orders;
 create policy "orders update own release" on public.orders for update
   to authenticated using ((select auth.uid()) = user_id and status = 'delivered' and escrow = 'fulfilled')
   with check ((select auth.uid()) = user_id);
+drop policy if exists "orders update admin" on public.orders;
 create policy "orders update admin" on public.orders for update
-  to authenticated using (public.is_admin((select auth.uid())))
-  with check (public.is_admin((select auth.uid())));
+  to authenticated using (public.is_admin())
+  with check (public.is_admin());
 
 -- reviews: public approved read; write own; admin moderate
+drop policy if exists "reviews select public" on public.reviews;
 create policy "reviews select public" on public.reviews for select
   to anon, authenticated using (status = 'approved');
+drop policy if exists "reviews select admin" on public.reviews;
 create policy "reviews select admin" on public.reviews for select
-  to authenticated using (public.is_admin((select auth.uid())));
+  to authenticated using (public.is_admin());
+drop policy if exists "reviews insert own" on public.reviews;
 create policy "reviews insert own" on public.reviews for insert
   to authenticated with check ((select auth.uid()) = user_id or user_id is null);
+drop policy if exists "reviews update admin" on public.reviews;
 create policy "reviews update admin" on public.reviews for update
-  to authenticated using (public.is_admin((select auth.uid())))
-  with check (public.is_admin((select auth.uid())));
+  to authenticated using (public.is_admin())
+  with check (public.is_admin());
 
 -- wishlist: own
+drop policy if exists "wishlist all own" on public.wishlist;
 create policy "wishlist all own" on public.wishlist for all
   to authenticated using ((select auth.uid()) = user_id)
   with check ((select auth.uid()) = user_id);
 
 -- loyalty_txn: own select; insert via add_loyalty_points only (own row)
+drop policy if exists "loyalty_txn select own" on public.loyalty_txn;
 create policy "loyalty_txn select own" on public.loyalty_txn for select
   to authenticated using ((select auth.uid()) = user_id);
+drop policy if exists "loyalty_txn insert own" on public.loyalty_txn;
 create policy "loyalty_txn insert own" on public.loyalty_txn for insert
   to authenticated with check ((select auth.uid()) = user_id);
 
 -- referrals: own select, own insert/update on own rows
+drop policy if exists "referrals select own" on public.referrals;
 create policy "referrals select own" on public.referrals for select
   to authenticated using ((select auth.uid()) = owner_id);
+drop policy if exists "referrals mutate own" on public.referrals;
 create policy "referrals mutate own" on public.referrals for all
   to authenticated using ((select auth.uid()) = owner_id)
   with check ((select auth.uid()) = owner_id);
 
 -- custom_requests: own select/insert; admin all + write
+drop policy if exists "custom select own" on public.custom_requests;
 create policy "custom select own" on public.custom_requests for select
   to authenticated using ((select auth.uid()) = user_id);
+drop policy if exists "custom select admin" on public.custom_requests;
 create policy "custom select admin" on public.custom_requests for select
-  to authenticated using (public.is_admin((select auth.uid())));
+  to authenticated using (public.is_admin());
+drop policy if exists "custom insert own" on public.custom_requests;
 create policy "custom insert own" on public.custom_requests for insert
   to authenticated with check ((select auth.uid()) = user_id);
+drop policy if exists "custom update admin" on public.custom_requests;
 create policy "custom update admin" on public.custom_requests for update
-  to authenticated using (public.is_admin((select auth.uid())))
-  with check (public.is_admin((select auth.uid())));
+  to authenticated using (public.is_admin())
+  with check (public.is_admin());
 
 -- wallet_txn: own select; insert only via admin/engine
+drop policy if exists "wallet select own" on public.wallet_txn;
 create policy "wallet select own" on public.wallet_txn for select
   to authenticated using ((select auth.uid()) = user_id);
+drop policy if exists "wallet insert admin" on public.wallet_txn;
 create policy "wallet insert admin" on public.wallet_txn for insert
-  to authenticated with check (public.is_admin((select auth.uid())));
+  to authenticated with check (public.is_admin());
+drop policy if exists "wallet insert owner" on public.wallet_txn;
 create policy "wallet insert owner" on public.wallet_txn for insert
   to authenticated with check ((select auth.uid()) = user_id);
 
 -- catalog extras: public read, admin write
+drop policy if exists "gallery select public" on public.gallery;
 create policy "gallery select public" on public.gallery for select to anon, authenticated using (true);
+drop policy if exists "gallery write admin" on public.gallery;
 create policy "gallery write admin" on public.gallery for all
-  to authenticated using (public.is_admin((select auth.uid()))) with check (public.is_admin((select auth.uid())));
+  to authenticated using (public.is_admin()) with check (public.is_admin());
 
+drop policy if exists "journal select public" on public.journal;
 create policy "journal select public" on public.journal for select to anon, authenticated using (true);
+drop policy if exists "journal write admin" on public.journal;
 create policy "journal write admin" on public.journal for all
-  to authenticated using (public.is_admin((select auth.uid()))) with check (public.is_admin((select auth.uid())));
+  to authenticated using (public.is_admin()) with check (public.is_admin());
 
+drop policy if exists "faqs select public" on public.faqs;
 create policy "faqs select public" on public.faqs for select to anon, authenticated using (true);
+drop policy if exists "faqs write admin" on public.faqs;
 create policy "faqs write admin" on public.faqs for all
-  to authenticated using (public.is_admin((select auth.uid()))) with check (public.is_admin((select auth.uid())));
+  to authenticated using (public.is_admin()) with check (public.is_admin());
 
+drop policy if exists "settings select public" on public.site_settings;
 create policy "settings select public" on public.site_settings for select to anon, authenticated using (true);
+drop policy if exists "settings write admin" on public.site_settings;
 create policy "settings write admin" on public.site_settings for all
-  to authenticated using (public.is_admin((select auth.uid()))) with check (public.is_admin((select auth.uid())));
+  to authenticated using (public.is_admin()) with check (public.is_admin());
 
+drop policy if exists "contact insert public" on public.contact_messages;
 create policy "contact insert public" on public.contact_messages for insert
   to anon, authenticated with check (true);
+drop policy if exists "contact select admin" on public.contact_messages;
 create policy "contact select admin" on public.contact_messages for select
-  to authenticated using (public.is_admin((select auth.uid())));
+  to authenticated using (public.is_admin());
+drop policy if exists "contact delete admin" on public.contact_messages;
 create policy "contact delete admin" on public.contact_messages for delete
-  to authenticated using (public.is_admin((select auth.uid())));
+  to authenticated using (public.is_admin());
 
 -- ============================================================
 -- Auto-create a profile on signup
@@ -403,8 +472,10 @@ insert into storage.buckets (id, name, public)
 values ('gallery', 'gallery', true)
 on conflict (id) do nothing;
 
+drop policy if exists "gallery storage public read" on storage.objects;
 create policy "gallery storage public read" on storage.objects
   for select using (bucket_id = 'gallery');
+drop policy if exists "gallery storage auth upload" on storage.objects;
 create policy "gallery storage auth upload" on storage.objects
   for insert to authenticated
   with check (bucket_id = 'gallery');
@@ -412,6 +483,14 @@ create policy "gallery storage auth upload" on storage.objects
 -- ============================================================
 -- Seed: launch catalog (6 flagship bags) + design options
 -- ============================================================
+-- Seed is idempotent: products dedupe on their unique slug, and
+-- design_options dedupe on this unique index. Without it the
+-- "on conflict" below could never fire, because id is a fresh
+-- gen_random_uuid() on every insert, and re-running this file would
+-- duplicate all 49 design options.
+create unique index if not exists design_options_group_value_key
+  on public.design_options (group_name, value);
+
 insert into public.products (slug, name, tagline, category, base_price, deposit_pct, featured, stock, description, seo_title, seo_desc)
 values
   ('sovereign-tote', 'The Sovereign', 'Our flagship full-grain leather tote.', 'Totes', 2490, 50, true, 12, 'A structured everyday tote in full-grain leather with antique gold hardware.', 'The Sovereign Tote | Anointed Queens', 'Flagship full-grain leather tote.'),
@@ -445,18 +524,23 @@ values
   ('lining','suede-lining','Suede Lining',280,null,true,3),
   ('personalisation','none','No Personalisation',0,null,true,1),('personalisation','initials','Gold-Foil Initials (3 letters)',120,null,true,2),
   ('personalisation','monogram','Hand Monogram',220,null,true,3),('personalisation','engraved','Hardware Engraving',180,null,true,4)
-on conflict do nothing;
+on conflict (group_name, value) do nothing;
 
 -- ============================================================
 -- Inventory control RPCs.
--- SECURITY DEFINER uses the function owner's privileges, which
--- BYPASSES RLS intentionally: selling/restocking stock is the
--- single authoritative path that tamper-proofs inventory while
--- retail clients only READ products. The functions accept only
--- (product_id, qty) pairs and can never set arbitrary columns.
+-- SECURITY DEFINER lets stock move even though the products policies
+-- are read-only for non-admins. Both functions accept only ids and
+-- quantities, so a caller can never write arbitrary columns.
+--
+-- KNOWN LIMITATION: sell_stock is granted to any authenticated user
+-- because checkout decrements stock client-side. A hostile client can
+-- therefore drive stock toward zero without paying. Locking this down
+-- properly means moving checkout settlement into an Edge Function
+-- using the service role and revoking this grant. Not done here, to
+-- avoid breaking checkout.
 -- ============================================================
 create or replace function public.sell_stock(items jsonb)
-returns void language plpgsql security definer as $$
+returns void language plpgsql security definer set search_path = public as $$
 declare it jsonb; nd integer;
 begin
   for it in select jsonb_array_elements(items)
@@ -474,12 +558,26 @@ end $$;
 
 grant execute on function public.sell_stock(jsonb) to authenticated;
 
+-- Restocking is an ADMIN action: it is only ever reached from the
+-- admin order screen when an order is cancelled. It is restricted to
+-- admins AND to orders that are actually cancelled, so a client
+-- cannot inflate stock by calling this directly against an order
+-- they have already received.
 create or replace function public.restock_order(p_order_id uuid)
-returns void language plpgsql security definer as $$
-declare it jsonb; o_items jsonb;
+returns void language plpgsql security definer set search_path = public as $$
+declare it jsonb; o_items jsonb; o_status text; o_user uuid;
 begin
-  select items into o_items from public.orders where id = p_order_id;
+  if not public.is_admin() then
+    raise exception 'admin only';
+  end if;
+
+  select items, status::text, user_id into o_items, o_status, o_user
+    from public.orders where id = p_order_id;
   if o_items is null then return; end if;
+  if o_status is distinct from 'cancelled' then
+    raise exception 'only cancelled orders can be restocked (order is %)', o_status;
+  end if;
+
   for it in select jsonb_array_elements(o_items)
   loop
     if it->>'kind' = 'custom' or it->>'product_id' is null then continue; end if;

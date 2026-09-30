@@ -75,6 +75,12 @@ inline SVG art (looks great, loads instantly, works offline).
   RLS policies exist (they do, in schema.sql).
 - **Review rejected**: RLS requires `user_id` to match your auth id; the form
   records it automatically.
-- **`is_admin` denied**: the function has EXECUTE for `authenticated` via
-  PUBLIC by default; if you tightened grants, re-grant:
-  `grant execute on function public.is_admin(uuid) to anon, authenticated;`
+- **`is_admin` denied**: `is_admin()` is SECURITY DEFINER (required — an
+  INVOKER body would recurse infinitely through the `profiles` policies).
+  schema.sql already grants EXECUTE, but if you tightened grants, re-grant:
+  `grant execute on function public.is_admin() to anon, authenticated;`
+- **`design_options` "column group does not exist"**: the live column is
+  `group_name` because `group` is reserved. `db.js` translates it to `group`
+  for the app, so never call this table with a raw `group` filter.
+- **Re-applying schema.sql**: it is now idempotent (every policy is preceded
+  by `drop policy if exists`), so it is safe to run again after edits.
