@@ -28,7 +28,29 @@ function main() {
     fs.copyFileSync(path.join(ROOT, f), path.join(OUT, f));
   }
   copyDir(path.join(ROOT, 'assets'), 'assets');
+
+  /* The suites drive demo behaviour through localStorage (aq_session with
+     demo:true, seeded catalog, simulated escrow). config.js now carries the
+     real Supabase publishable key for production, so blank the two vars in
+     the BUILT copy only. Without this AQ.DEMO flips to false and every
+     demo assertion would hit Postgres instead of localStorage. */
+  const cfgPath = path.join(OUT, 'config.js');
+  let cfg = fs.readFileSync(cfgPath, 'utf8');
+  const before = cfg;
+  cfg = cfg
+    .replace(/var SUPABASE_URL = (?:'[^']*'|"[^"]*");/, "var SUPABASE_URL = '';")
+    .replace(/var SUPABASE_ANON_KEY = (?:'[^']*'|"[^"]*");/, "var SUPABASE_ANON_KEY = '';");
+  if (cfg === before) {
+    throw new Error('build_site: could not find the Supabase key assignments in config.js; '
+      + 'harness would silently run against live Supabase instead of demo mode');
+  }
+  fs.writeFileSync(cfgPath, '/* harness build: Supabase keys blanked, DEMO MODE forced */\n' + cfg);
+  if (!/var SUPABASE_URL = '';/.test(cfg) || !/var SUPABASE_ANON_KEY = '';/.test(cfg)) {
+    throw new Error('build_site: failed to blank Supabase keys in the built config.js');
+  }
+
   console.log('Built harness site with: ' + files.filter((f) => f.endsWith('.html')).join(', '));
+  console.log('config.js: Supabase keys blanked -> harness runs in DEMO mode');
 }
 
 main();

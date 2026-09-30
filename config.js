@@ -1,17 +1,20 @@
 /* ============================================================
-   ANNOINTED QUEENS - app configuration
+   ANOINTED QUEENS - app configuration
    ============================================================
-   DEMO MODE: leave SUPABASE_URL / SUPABASE_ANON_KEY empty and the
+   DEMO MODE: blank out SUPABASE_URL / SUPABASE_ANON_KEY and the
    store runs fully in localStorage demo mode (seeded catalog,
    demo payment, simulated escrow) - zero backend required.
 
-   LIVE MODE: paste your Supabase project url + anon key, apply
-   supabase/schema.sql (see supabase/SETUP.md), set
-   STRIPE_PUBLISHABLE_KEY if using card payments.
+   LIVE MODE: values below are set, supabase/schema.sql has been
+   applied, so the store runs against Supabase Auth + Postgres with
+   RLS. SUPABASE_ANON_KEY holds the new-style publishable key
+   (sb_publishable_...); the legacy anon JWT also works. Both are
+   public by design and safe to ship to the browser. NEVER put the
+   service_role key or the DB password in this file.
    ============================================================ */
 window.AQ = (function () {
-  var SUPABASE_URL = '';
-  var SUPABASE_ANON_KEY = '';
+  var SUPABASE_URL = 'https://obneyqnrnmnaqqshuzuo.supabase.co';
+  var SUPABASE_ANON_KEY = 'sb_publishable_0Wj5sQstDgR9WvXooLMgbQ_t2LESHa1';
   var STRIPE_PUBLISHABLE_KEY = '';
   /* Optional live overrides: line above wins if empty; fall back
      to ?sb= param on the URL for quick harness toggling. */
@@ -25,7 +28,7 @@ window.AQ = (function () {
   return {
     NAME: 'Anointed Queens',
     TAGLINE: 'Crowned in craft. Carried with purpose.',
-    VERSION: '1.4.2',
+    VERSION: '1.4.3',
     THEME: { gold: '#D4AF37', goldBright: '#FFD700', black: '#0A0A0A' },
     CURRENCY: 'ZAR',
     LOCALE: 'en-ZA',
